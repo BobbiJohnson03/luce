@@ -61,8 +61,9 @@ Projekt realizowany etapami. Status aktualizowany na bieżąco.
 - [x] **Etap 0 — Setup.** Next.js + TypeScript + Tailwind, repozytorium git, README.
 - [x] **Etap 1 — Fundament UI.** Dark mode only, design system (kolory, typografia),
       landing/hero w stylu referencji, placeholder na element 3D.
-- [ ] **Etap 2 — Auth.** Integracja Supabase, ekrany logowania i rejestracji,
-      ochrona tras dashboardu.
+- [x] **Etap 2 — Auth.** Integracja Supabase (`@supabase/ssr`), ekrany logowania
+      i rejestracji, middleware chroniący `/dashboard`, łagodna obsługa braku
+      konfiguracji (`SetupNotice`).
 - [ ] **Etap 3 — Dashboard.** Layout centrum dowodzenia, nawigacja w duchu
       referencji (menu-overlay), miejsce na element 3D.
 - [ ] **Etap 4 — Kalendarz.** Zapisywanie ważnych wydarzeń/notatek per dzień.
