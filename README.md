@@ -2,8 +2,6 @@
 
 _luce_ (Italian) — **light.** A calm, dark-mode-only web app that acts as your personal **command center**: a calendar for the things that matter, to-do lists with a satisfying check-off sound, and room for an interactive 3D centerpiece. Everything important, in one quiet place.
 
-The interface takes visual cues from [junhyungpark.com](https://junhyungpark.com/) — lots of whitespace, light typography and subtle motion — and reinterprets that language on a dark canvas.
-
 ---
 
 ## Visuals
