@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
+/*
+ * Luce - design system (dark mode only)
+ * Minimalist, high-contrast, lots of whitespace. Inspired by junhyungpark.com
+ * but inverted into a calm, dark "command center" aesthetic.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core surfaces */
+  --background: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #161616;
+  --foreground: #ededed;
+
+  /* Text hierarchy */
+  --muted: #8a8a8a;
+  --muted-strong: #b4b4b4;
+
+  /* Lines / borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Accent - "luce" (light): a soft warm glow */
+  --accent: #f5f0e6;
+  --accent-dim: rgba(245, 240, 230, 0.6);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-strong: var(--muted-strong);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Thin, unobtrusive scrollbar to match the minimalist theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: #0a0a0a;
+}
+
+/* Subtle entrance used across the app */
+@keyframes luce-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: luce-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

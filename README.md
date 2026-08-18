@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Luce
 
-## Getting Started
+> _luce_ (wł.) — światło. Twoje osobiste **centrum dowodzenia**: kalendarz, notatki i
+> to-do listy w spokojnej, minimalistycznej przestrzeni. **Dark mode only.**
 
-First, run the development server:
+Inspiracja wizualna: [junhyungpark.com](https://junhyungpark.com/) — dużo pustej
+przestrzeni, lekka typografia, subtelne interakcje i element 3D w centrum. Luce
+przenosi ten język na ciemny motyw.
+
+---
+
+## Stack technologiczny
+
+| Warstwa      | Wybór                          |
+| ------------ | ------------------------------ |
+| Framework    | **Next.js 16** (App Router)    |
+| Język        | **TypeScript**                 |
+| UI / style   | **Tailwind CSS v4**            |
+| Auth + dane  | **Supabase** (chmura)          |
+| 3D           | **Spline** (planowane, Etap 6) |
+| Runtime      | React 19                       |
+
+## Uruchomienie lokalne
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikacja startuje na [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Zmienne środowiskowe
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Skopiuj `.env.example` do `.env.local` i uzupełnij kluczami z projektu
+Supabase (Project Settings → API):
 
-## Learn More
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Struktura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/            # trasy (App Router)
+    page.tsx      # landing / hero
+    login/        # logowanie
+    register/     # rejestracja
+    dashboard/    # centrum dowodzenia (kalendarz + to-do)
+  components/     # komponenty współdzielone (Logo, BlobPlaceholder, ...)
+  lib/            # klienci Supabase, helpery
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Plan — etapy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Projekt realizowany etapami. Status aktualizowany na bieżąco.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [x] **Etap 0 — Setup.** Next.js + TypeScript + Tailwind, repozytorium git, README.
+- [x] **Etap 1 — Fundament UI.** Dark mode only, design system (kolory, typografia),
+      landing/hero w stylu referencji, placeholder na element 3D.
+- [ ] **Etap 2 — Auth.** Integracja Supabase, ekrany logowania i rejestracji,
+      ochrona tras dashboardu.
+- [ ] **Etap 3 — Dashboard.** Layout centrum dowodzenia, nawigacja w duchu
+      referencji (menu-overlay), miejsce na element 3D.
+- [ ] **Etap 4 — Kalendarz.** Zapisywanie ważnych wydarzeń/notatek per dzień.
+- [ ] **Etap 5 — To-do + dźwięk.** Listy zadań, checkboxy, dźwięk przy odhaczaniu
+      (plik audio do zaimportowania później).
+- [ ] **Etap 6 — Spline 3D.** Podmiana placeholdera na prawdziwą scenę 3D.
+
+## Motyw / design tokens
+
+Zdefiniowane w `src/app/globals.css`:
+
+- tło `--background` `#0a0a0a`, powierzchnie `--surface`
+- tekst `--foreground`, `--muted`
+- akcent `--accent` `#f5f0e6` (ciepłe „światło")
+- cienkie obramowania `--border`
+
+---
+
+_Made with care — Luce, dark by design._
