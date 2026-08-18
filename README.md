@@ -74,8 +74,9 @@ Projekt realizowany etapami. Status aktualizowany na bieżąco.
       w duchu referencji, ambient „światło" w tle, sekcje na kalendarz i to-do.
 - [x] **Etap 4 — Kalendarz.** Schemat DB (`supabase/schema.sql`, RLS), miesięczny
       kalendarz z dodawaniem/usuwaniem wydarzeń i notatek per dzień.
-- [ ] **Etap 5 — To-do + dźwięk.** Listy zadań, checkboxy, dźwięk przy odhaczaniu
-      (plik audio do zaimportowania później).
+- [x] **Etap 5 — To-do + dźwięk.** Listy zadań z checkboxami (optymistyczne UI),
+      dźwięk przy odhaczaniu — plik `public/sounds/check.mp3` do podmiany, z
+      fallbackiem na syntezowany „tick".
 - [ ] **Etap 6 — Spline 3D.** Podmiana placeholdera na prawdziwą scenę 3D.
 
 ## Motyw / design tokens

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CalendarEvent } from "@/lib/types";
+import type { CalendarEvent, Todo } from "@/lib/types";
 import { Calendar } from "@/components/Calendar";
+import { TodoList } from "@/components/TodoList";
 
 function Panel({
   id,
@@ -28,10 +29,16 @@ function Panel({
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const { data: events } = await supabase
-    .from("events")
-    .select("id, event_date, title, note")
-    .order("event_date", { ascending: true });
+  const [{ data: events }, { data: todos }] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, event_date, title, note")
+      .order("event_date", { ascending: true }),
+    supabase
+      .from("todos")
+      .select("id, title, done")
+      .order("created_at", { ascending: true }),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -48,10 +55,7 @@ export default async function DashboardPage() {
         </Panel>
 
         <Panel id="todos" eyebrow="TO-DO" title="Zadania">
-          <p className="text-sm text-muted">
-            Wkrótce — listy zadań z checkboxami i dźwiękiem przy odhaczaniu
-            (Etap 5).
-          </p>
+          <TodoList todos={(todos as Todo[]) ?? []} />
         </Panel>
       </div>
     </div>
