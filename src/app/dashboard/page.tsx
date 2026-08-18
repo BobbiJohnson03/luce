@@ -1,3 +1,7 @@
+import { createClient } from "@/lib/supabase/server";
+import type { CalendarEvent } from "@/lib/types";
+import { Calendar } from "@/components/Calendar";
+
 function Panel({
   id,
   eyebrow,
@@ -21,7 +25,14 @@ function Panel({
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, event_date, title, note")
+    .order("event_date", { ascending: true });
+
   return (
     <div className="mx-auto w-full max-w-5xl">
       <div className="animate-fade-up py-8">
@@ -33,9 +44,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel id="calendar" eyebrow="CALENDARIO" title="Kalendarz">
-          <p className="text-sm text-muted">
-            Wkrótce — zapisywanie ważnych wydarzeń i notatek per dzień (Etap 4).
-          </p>
+          <Calendar events={(events as CalendarEvent[]) ?? []} />
         </Panel>
 
         <Panel id="todos" eyebrow="TO-DO" title="Zadania">

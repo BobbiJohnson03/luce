@@ -39,6 +39,12 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
+### Baza danych
+
+W panelu Supabase otwórz **SQL Editor**, wklej zawartość
+[`supabase/schema.sql`](supabase/schema.sql) i wykonaj — utworzy tabele
+`events` i `todos` wraz z regułami RLS (każdy widzi tylko swoje dane).
+
 ## Struktura
 
 ```
@@ -66,7 +72,8 @@ Projekt realizowany etapami. Status aktualizowany na bieżąco.
       konfiguracji (`SetupNotice`).
 - [x] **Etap 3 — Dashboard.** Layout centrum dowodzenia, nawigacja menu-overlay
       w duchu referencji, ambient „światło" w tle, sekcje na kalendarz i to-do.
-- [ ] **Etap 4 — Kalendarz.** Zapisywanie ważnych wydarzeń/notatek per dzień.
+- [x] **Etap 4 — Kalendarz.** Schemat DB (`supabase/schema.sql`, RLS), miesięczny
+      kalendarz z dodawaniem/usuwaniem wydarzeń i notatek per dzień.
 - [ ] **Etap 5 — To-do + dźwięk.** Listy zadań, checkboxy, dźwięk przy odhaczaniu
       (plik audio do zaimportowania później).
 - [ ] **Etap 6 — Spline 3D.** Podmiana placeholdera na prawdziwą scenę 3D.
