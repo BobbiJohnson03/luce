@@ -64,8 +64,8 @@ Projekt realizowany etapami. Status aktualizowany na bieżąco.
 - [x] **Etap 2 — Auth.** Integracja Supabase (`@supabase/ssr`), ekrany logowania
       i rejestracji, middleware chroniący `/dashboard`, łagodna obsługa braku
       konfiguracji (`SetupNotice`).
-- [ ] **Etap 3 — Dashboard.** Layout centrum dowodzenia, nawigacja w duchu
-      referencji (menu-overlay), miejsce na element 3D.
+- [x] **Etap 3 — Dashboard.** Layout centrum dowodzenia, nawigacja menu-overlay
+      w duchu referencji, ambient „światło" w tle, sekcje na kalendarz i to-do.
 - [ ] **Etap 4 — Kalendarz.** Zapisywanie ważnych wydarzeń/notatek per dzień.
 - [ ] **Etap 5 — To-do + dźwięk.** Listy zadań, checkboxy, dźwięk przy odhaczaniu
       (plik audio do zaimportowania później).
