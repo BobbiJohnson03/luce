@@ -5,15 +5,17 @@ import { signOut } from "@/app/auth/actions";
 import { Logo } from "@/components/Logo";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { SetupNotice } from "@/components/SetupNotice";
+import { NotesShell } from "@/components/notes/NotesShell";
+import type { NoteFolder, NoteSummary } from "@/lib/notes/types";
 
 const MENU_ITEMS = [
   { label: "Panoramica", href: "/dashboard" },
-  { label: "Calendario", href: "#calendar" },
-  { label: "To-do", href: "#todos" },
+  { label: "Calendario", href: "/dashboard#calendar" },
+  { label: "To-do", href: "/dashboard#todos" },
   { label: "Note", href: "/notes" },
 ];
 
-export default async function DashboardLayout({
+export default async function NotesLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -24,17 +26,23 @@ export default async function DashboardLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
-  return (
-    <div className="relative flex min-h-screen flex-col">
-      {/* ambient light, sits behind everything */}
-      <div className="pointer-events-none fixed inset-0 -z-10 flex items-start justify-center opacity-20">
-        <div className="mt-[-10%] aspect-square w-[70vw] max-w-[900px] rounded-full bg-accent/10 blur-3xl" />
-      </div>
+  const [{ data: folders }, { data: notes }] = await Promise.all([
+    supabase
+      .from("note_folders")
+      .select("id, name, parent_id, position, created_at, updated_at")
+      .order("position", { ascending: true })
+      .order("name", { ascending: true }),
+    supabase
+      .from("notes")
+      .select("id, folder_id, title, is_pinned, position, updated_at")
+      .order("updated_at", { ascending: false }),
+  ]);
 
-      <header className="flex items-center justify-between px-6 py-6 sm:px-10">
+  return (
+    <div className="flex h-[100dvh] flex-col">
+      <header className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4 sm:px-10">
         <div className="flex items-center gap-6">
           <MenuOverlay items={MENU_ITEMS} />
           <Logo href="/dashboard" />
@@ -52,7 +60,12 @@ export default async function DashboardLayout({
         </div>
       </header>
 
-      <main className="flex-1 px-6 pb-16 sm:px-10">{children}</main>
+      <NotesShell
+        folders={(folders as NoteFolder[]) ?? []}
+        notes={(notes as NoteSummary[]) ?? []}
+      >
+        {children}
+      </NotesShell>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { CalendarEvent, Todo } from "@/lib/types";
 import { Calendar } from "@/components/Calendar";
@@ -58,6 +59,25 @@ export default async function DashboardPage() {
           <TodoList todos={(todos as Todo[]) ?? []} />
         </Panel>
       </div>
+
+      <Link
+        href="/notes"
+        id="notes"
+        className="mt-6 flex scroll-mt-24 items-center justify-between rounded-2xl border border-border bg-surface/60 p-6 backdrop-blur-sm transition-colors hover:border-border-strong hover:bg-surface"
+      >
+        <div>
+          <p className="text-[0.7rem] tracking-[0.3em] text-muted">NOTE</p>
+          <h2 className="mt-1 text-xl font-light tracking-tight">
+            Notatki i wiedza
+          </h2>
+          <p className="mt-2 text-sm text-muted">
+            Foldery, notatki, tabele i listy — Twoja osobista baza wiedzy.
+          </p>
+        </div>
+        <span className="text-muted transition-colors group-hover:text-foreground">
+          →
+        </span>
+      </Link>
     </div>
   );
 }

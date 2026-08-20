@@ -1,56 +1,11 @@
--- Luce — database schema
--- Uruchom w Supabase: Dashboard → SQL Editor → wklej i wykonaj.
--- Tworzy tabele dla kalendarza (events) i zadań (todos) z Row Level Security,
--- tak aby każdy użytkownik widział i modyfikował wyłącznie własne dane.
+-- Luce — Notes & Knowledge MVP
+-- Incremental migration: adds the hierarchical notes feature (folders + notes).
+-- Safe to run on an existing Luce database (idempotent).
+--
+-- Apply in Supabase: Dashboard → SQL Editor → paste this file → Run.
+-- (This same block is also mirrored in supabase/schema.sql, the canonical schema.)
 
--- ── Events (kalendarz) ──────────────────────────────────────────────────────
-create table if not exists public.events (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references auth.users (id) on delete cascade,
-  event_date  date not null,
-  title       text not null,
-  note        text,
-  created_at  timestamptz not null default now()
-);
-
-create index if not exists events_user_date_idx
-  on public.events (user_id, event_date);
-
-alter table public.events enable row level security;
-
-drop policy if exists "events are private" on public.events;
-create policy "events are private"
-  on public.events
-  for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
--- ── Todos (zadania) ─────────────────────────────────────────────────────────
-create table if not exists public.todos (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references auth.users (id) on delete cascade,
-  title       text not null,
-  done        boolean not null default false,
-  created_at  timestamptz not null default now()
-);
-
-create index if not exists todos_user_idx
-  on public.todos (user_id, created_at);
-
-alter table public.todos enable row level security;
-
-drop policy if exists "todos are private" on public.todos;
-create policy "todos are private"
-  on public.todos
-  for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
--- ── Notes & Knowledge (see supabase/migrations/0001_notes.sql) ───────────────
--- Hierarchical folders + block-editor notes. Kept in sync with the incremental
--- migration file so this schema stays a complete, re-runnable snapshot.
-
--- Note folders (recursive hierarchy)
+-- ── Note folders (recursive hierarchy) ──────────────────────────────────────
 create table if not exists public.note_folders (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users (id) on delete cascade,
@@ -75,7 +30,12 @@ create policy "note_folders are private"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
--- Notes (content stored as JSONB, search_text is a plain-text projection)
+-- ── Notes ───────────────────────────────────────────────────────────────────
+-- content: block-editor document (BlockNote) stored as JSONB so structure is kept.
+-- search_text: plain-text projection of title + content for cheap ILIKE search
+--              (designed to later evolve into Postgres full-text search).
+-- folder_id on delete cascade: deleting a folder removes its notes too, so a
+--              folder delete cascades cleanly through the whole subtree with no orphans.
 create table if not exists public.notes (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users (id) on delete cascade,
@@ -107,7 +67,7 @@ create policy "notes are private"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
--- updated_at maintenance
+-- ── updated_at maintenance ──────────────────────────────────────────────────
 create or replace function public.luce_set_updated_at()
 returns trigger
 language plpgsql
@@ -128,7 +88,7 @@ create trigger notes_set_updated_at
   before update on public.notes
   for each row execute function public.luce_set_updated_at();
 
--- Ownership integrity: a note may only live in a folder the user owns
+-- ── Ownership integrity: a note may only live in a folder the user owns ──────
 create or replace function public.notes_validate_folder()
 returns trigger
 language plpgsql
@@ -152,7 +112,7 @@ create trigger notes_validate_folder_trg
   before insert or update of folder_id, user_id on public.notes
   for each row execute function public.notes_validate_folder();
 
--- Hierarchy integrity: parent must be owned, and no cycles / self-parenting
+-- ── Hierarchy integrity: parent must be owned, and no cycles / self-parenting ─
 create or replace function public.note_folders_validate_parent()
 returns trigger
 language plpgsql
@@ -178,6 +138,7 @@ begin
     raise exception 'parent_id % does not belong to the folder owner', new.parent_id;
   end if;
 
+  -- Walk up the ancestor chain; if we ever reach this folder, it is a cycle.
   cursor_id := new.parent_id;
   while cursor_id is not null and guard < 10000 loop
     if cursor_id = new.id then

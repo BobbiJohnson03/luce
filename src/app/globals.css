@@ -79,3 +79,55 @@ body {
 .animate-fade-up {
   animation: luce-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/*
+ * BlockNote (Notes editor) theming.
+ * Map BlockNote's design tokens onto Luce's own so the editor and its menus
+ * (slash menu, formatting toolbar, drag handles) blend into the dark surface
+ * instead of looking like an embedded third-party widget.
+ */
+:root,
+.bn-container,
+.bn-mantine {
+  --bn-colors-editor-background: transparent;
+  --bn-colors-editor-text: var(--foreground);
+  --bn-colors-menu-text: var(--muted-strong);
+  --bn-colors-menu-background: var(--surface-2);
+  --bn-colors-tooltip-text: var(--muted-strong);
+  --bn-colors-tooltip-background: var(--surface-2);
+  --bn-colors-hovered-text: var(--foreground);
+  --bn-colors-hovered-background: var(--surface);
+  --bn-colors-selected-text: var(--background);
+  --bn-colors-selected-background: var(--accent);
+  --bn-colors-disabled-text: var(--muted);
+  --bn-colors-disabled-background: var(--surface);
+  --bn-colors-border: var(--border);
+  --bn-colors-side-menu: var(--muted);
+  --bn-colors-highlights-gray-text: var(--muted);
+  --bn-colors-highlights-gray-background: var(--surface-2);
+  --bn-font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --bn-border-radius: 0.6rem;
+}
+
+/* Align the editor body with the note title (remove BlockNote's default gutter). */
+.luce-blocknote .bn-editor {
+  padding-inline: 0;
+  background: transparent;
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Tables: quiet borders that match Luce, horizontal scroll on small screens. */
+.luce-blocknote .bn-block-content[data-content-type="table"] {
+  overflow-x: auto;
+}
+
+.luce-blocknote .tiptap.ProseMirror table td,
+.luce-blocknote .tiptap.ProseMirror table th {
+  border-color: var(--border-strong);
+}
