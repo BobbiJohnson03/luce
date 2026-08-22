@@ -11,6 +11,7 @@ const MENU_ITEMS = [
   { label: "Calendario", href: "#calendar" },
   { label: "To-do", href: "#todos" },
   { label: "Note", href: "/notes" },
+  { label: "Languages", href: "/languages" },
 ];
 
 export default async function DashboardLayout({

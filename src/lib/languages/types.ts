@@ -1,5 +1,6 @@
 /** CEFR proficiency levels accepted by the language_profiles table. */
-export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+export type CefrLevel = (typeof CEFR_LEVELS)[number];
 
 /**
  * A user-owned language workspace. Mirrors the snake_case columns stored in

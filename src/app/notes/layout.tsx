@@ -13,6 +13,7 @@ const MENU_ITEMS = [
   { label: "Calendario", href: "/dashboard#calendar" },
   { label: "To-do", href: "/dashboard#todos" },
   { label: "Note", href: "/notes" },
+  { label: "Languages", href: "/languages" },
 ];
 
 export default async function NotesLayout({
