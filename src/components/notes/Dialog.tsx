@@ -13,12 +13,14 @@ export function Dialog({
   onClose,
   title,
   description,
+  panelClassName,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   description?: string;
+  panelClassName?: string;
   children: React.ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -84,7 +86,10 @@ export function Dialog({
       />
       <div
         ref={panelRef}
-        className="animate-fade-up relative w-full max-w-md rounded-2xl border border-border bg-surface p-6"
+        className={[
+          "animate-fade-up relative w-full max-w-md rounded-2xl border border-border bg-surface p-6",
+          panelClassName ?? "",
+        ].join(" ")}
       >
         <div className="flex items-start justify-between gap-4">
           <div>

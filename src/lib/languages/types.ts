@@ -21,3 +21,49 @@ export type LanguageProfile = {
   created_at: string;
   updated_at: string;
 };
+
+/** A semantic category within one language profile. */
+export type LanguageTopic = {
+  id: string;
+  user_id: string;
+  language_profile_id: string;
+  parent_id: string | null;
+  name: string;
+  description: string | null;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Durable vocabulary content. Review and scheduling state are separate. */
+export type VocabularyItem = {
+  id: string;
+  user_id: string;
+  language_profile_id: string;
+  term: string;
+  translation: string;
+  definition: string | null;
+  part_of_speech: string | null;
+  gender: string | null;
+  plural: string | null;
+  pronunciation: string | null;
+  ipa: string | null;
+  example_sentence: string | null;
+  example_translation: string | null;
+  notes: string | null;
+  archived_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type VocabularyTopic = {
+  user_id: string;
+  language_profile_id: string;
+  vocabulary_item_id: string;
+  language_topic_id: string;
+  created_at: string;
+};
+
+export type VocabularyItemWithTopics = VocabularyItem & {
+  topic_ids: string[];
+};
