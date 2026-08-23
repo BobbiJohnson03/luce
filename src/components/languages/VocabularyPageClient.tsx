@@ -19,6 +19,7 @@ export function VocabularyPageClient({
   selectedTopicId,
   page,
   pageSize,
+  dueCount,
 }: {
   profileId: string;
   items: VocabularyItemWithTopics[];
@@ -28,6 +29,7 @@ export function VocabularyPageClient({
   selectedTopicId: string;
   page: number;
   pageSize: number;
+  dueCount: number;
 }) {
   const [adding, setAdding] = useState(false);
   const [selected, setSelected] = useState<VocabularyItemWithTopics | null>(null);
@@ -56,13 +58,23 @@ export function VocabularyPageClient({
               : `${total} ${total === 1 ? "word" : "words"}`}
           </h2>
         </div>
-        <button
-          type="button"
-          onClick={() => setAdding(true)}
-          className="w-fit rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
-        >
-          + Add vocabulary
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {dueCount > 0 && (
+            <Link
+              href={`/languages/${profileId}/review?from=vocabulary`}
+              className="w-fit rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+            >
+              Review due ({dueCount})
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="w-fit rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          >
+            + Add vocabulary
+          </button>
+        </div>
       </div>
 
       <form

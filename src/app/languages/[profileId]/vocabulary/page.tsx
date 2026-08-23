@@ -4,6 +4,7 @@ import {
   loadLanguageProfile,
   VOCABULARY_ITEM_COLUMNS,
 } from "@/lib/languages/server";
+import { countDueReviewCards } from "@/lib/languages/srs/review-server";
 import type {
   LanguageTopic,
   VocabularyItem,
@@ -33,13 +34,16 @@ export default async function VocabularyPage({
   const { supabase, userId, profile } = await loadLanguageProfile(profileId);
   if (!profile) return null;
 
-  const { data: topicData, error: topicError } = await supabase
-    .from("language_topics")
-    .select(LANGUAGE_TOPIC_COLUMNS)
-    .eq("user_id", userId)
-    .eq("language_profile_id", profileId)
-    .order("position", { ascending: true })
-    .order("name", { ascending: true });
+  const [{ data: topicData, error: topicError }, dueCount] = await Promise.all([
+    supabase
+      .from("language_topics")
+      .select(LANGUAGE_TOPIC_COLUMNS)
+      .eq("user_id", userId)
+      .eq("language_profile_id", profileId)
+      .order("position", { ascending: true })
+      .order("name", { ascending: true }),
+    countDueReviewCards(supabase, userId, profileId),
+  ]);
 
   if (topicError) console.error("Could not load vocabulary topics:", topicError);
   const topics = (topicData as LanguageTopic[] | null) ?? [];
@@ -127,6 +131,7 @@ export default async function VocabularyPage({
       selectedTopicId={selectedTopicId}
       page={page}
       pageSize={PAGE_SIZE}
+      dueCount={dueCount}
     />
   );
 }

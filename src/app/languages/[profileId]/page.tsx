@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { loadLanguageProfile } from "@/lib/languages/server";
+import { countDueReviewCards } from "@/lib/languages/srs/review-server";
 
 export default async function LanguageProfileOverviewPage({
   params,
@@ -10,27 +11,29 @@ export default async function LanguageProfileOverviewPage({
   const { supabase, userId, profile } = await loadLanguageProfile(profileId);
   if (!profile) return null;
 
-  const [vocabularyResult, topicResult, recentResult] = await Promise.all([
-    supabase
-      .from("vocabulary_items")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("language_profile_id", profileId)
-      .is("archived_at", null),
-    supabase
-      .from("language_topics")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("language_profile_id", profileId),
-    supabase
-      .from("vocabulary_items")
-      .select("id, term, translation")
-      .eq("user_id", userId)
-      .eq("language_profile_id", profileId)
-      .is("archived_at", null)
-      .order("created_at", { ascending: false })
-      .limit(4),
-  ]);
+  const [vocabularyResult, topicResult, recentResult, dueCount] =
+    await Promise.all([
+      supabase
+        .from("vocabulary_items")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("language_profile_id", profileId)
+        .is("archived_at", null),
+      supabase
+        .from("language_topics")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("language_profile_id", profileId),
+      supabase
+        .from("vocabulary_items")
+        .select("id, term, translation")
+        .eq("user_id", userId)
+        .eq("language_profile_id", profileId)
+        .is("archived_at", null)
+        .order("created_at", { ascending: false })
+        .limit(4),
+      countDueReviewCards(supabase, userId, profileId),
+    ]);
 
   if (vocabularyResult.error || topicResult.error || recentResult.error) {
     console.error("Could not load language overview:", {
@@ -58,10 +61,29 @@ export default async function LanguageProfileOverviewPage({
           meaning and context.
         </p>
 
+        {dueCount > 0 && (
+          <div className="mt-7 flex flex-wrap items-center gap-4">
+            <Link
+              href={`/languages/${profileId}/review?from=overview`}
+              className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            >
+              Review →
+            </Link>
+            <span className="text-sm text-muted">
+              <span className="tabular-nums text-foreground">{dueCount}</span>{" "}
+              due today
+            </span>
+          </div>
+        )}
+
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href={`/languages/${profileId}/vocabulary`}
-            className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            className={
+              dueCount > 0
+                ? "rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+                : "rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
+            }
           >
             Open vocabulary
           </Link>
@@ -103,6 +125,12 @@ export default async function LanguageProfileOverviewPage({
             <div>
               <dt className="text-sm text-muted">Topics</dt>
               <dd className="mt-1 text-2xl font-light">{topicCount}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted">Due</dt>
+              <dd className="mt-1 text-2xl font-light tabular-nums">
+                {dueCount}
+              </dd>
             </div>
           </dl>
         </div>
