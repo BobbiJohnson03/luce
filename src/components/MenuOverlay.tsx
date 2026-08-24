@@ -1,8 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  useTheme,
+  type ThemePreference,
+} from "@/components/theme/ThemeProvider";
 
 type Item = { label: string; href: string };
+
+const APPEARANCE_OPTIONS: { value: ThemePreference; label: string }[] = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+];
+
+function AppearanceControl() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <span className="text-xs tracking-[0.25em] text-muted">APPEARANCE</span>
+      <div
+        role="radiogroup"
+        aria-label="Appearance"
+        className="flex items-center gap-1 rounded-full border border-border p-1"
+      >
+        {APPEARANCE_OPTIONS.map((option) => {
+          const active = theme === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setTheme(option.value)}
+              className={[
+                "rounded-full px-4 py-1.5 text-sm transition-colors",
+                active
+                  ? "bg-surface-2 text-foreground"
+                  : "text-muted hover:text-foreground",
+              ].join(" ")}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Centered full-screen menu overlay, echoing the reference site's navigation.
@@ -69,6 +115,10 @@ export function MenuOverlay({ items }: { items: Item[] }) {
               </a>
             ))}
           </nav>
+
+          <div className="flex justify-center px-6 pb-12 sm:pb-16">
+            <AppearanceControl />
+          </div>
         </div>
       )}
     </>

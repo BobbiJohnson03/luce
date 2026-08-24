@@ -33,7 +33,7 @@ export function DeleteConfirmDialog({
             onConfirm();
             onClose();
           }}
-          className="rounded-full border border-red-500/40 px-4 py-1.5 text-sm text-red-400 transition-colors hover:border-red-500 hover:bg-red-500/10"
+          className="rounded-full border border-danger/40 px-4 py-1.5 text-sm text-danger transition-colors hover:border-danger hover:bg-danger/10"
         >
           {confirmLabel}
         </button>

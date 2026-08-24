@@ -218,7 +218,7 @@ export function ReviewSessionClient({
           {error && (
             <p
               role="alert"
-              className="mx-auto mb-3 max-w-xl text-center text-sm text-red-400"
+              className="mx-auto mb-3 max-w-xl text-center text-sm text-danger"
             >
               {error}
             </p>

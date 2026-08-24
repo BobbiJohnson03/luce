@@ -36,7 +36,7 @@ function SaveStatus({ status }: { status: Status }) {
     <span
       className={[
         "flex items-center gap-1.5 text-xs",
-        status === "error" ? "text-red-400" : "text-muted",
+        status === "error" ? "text-danger" : "text-muted",
       ].join(" ")}
       role="status"
       aria-live="polite"

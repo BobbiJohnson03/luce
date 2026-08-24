@@ -5,6 +5,7 @@ import "@blocknote/mantine/style.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import type { PartialBlock } from "@blocknote/core";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import type { NoteContent } from "@/lib/notes/types";
 
 /**
@@ -23,6 +24,7 @@ export function NoteEditor({
   initialContent: NoteContent;
   onChange: (blocks: NoteContent) => void;
 }) {
+  const { resolvedTheme } = useTheme();
   const editor = useCreateBlockNote({
     // BlockNote rejects an empty array; use undefined to start with a blank doc.
     initialContent:
@@ -34,7 +36,7 @@ export function NoteEditor({
   return (
     <BlockNoteView
       editor={editor}
-      theme="dark"
+      theme={resolvedTheme}
       onChange={() => onChange(editor.document as NoteContent)}
       className="luce-blocknote"
     />

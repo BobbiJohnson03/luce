@@ -65,7 +65,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             className={[
               "animate-fade-up pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface-2 px-4 py-3 text-sm shadow-lg shadow-black/30",
               t.kind === "error"
-                ? "border-red-500/30 text-red-300"
+                ? "border-danger/30 text-danger"
                 : t.kind === "success"
                   ? "border-border text-foreground"
                   : "border-border text-muted-strong",

@@ -244,7 +244,7 @@ export function VocabularyDialog({
         )}
 
         {error && (
-          <p role="alert" className="text-sm leading-relaxed text-red-400">
+          <p role="alert" className="text-sm leading-relaxed text-danger">
             {error}
           </p>
         )}
