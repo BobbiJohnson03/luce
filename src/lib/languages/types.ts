@@ -67,3 +67,46 @@ export type VocabularyTopic = {
 export type VocabularyItemWithTopics = VocabularyItem & {
   topic_ids: string[];
 };
+
+/** Relationship metadata connecting one existing Luce Note to one profile. */
+export type LanguageNoteLink = {
+  id: string;
+  user_id: string;
+  language_profile_id: string;
+  note_id: string;
+  created_at: string;
+};
+
+/** A profile-scoped Topic assignment for a linked Note. */
+export type LanguageNoteTopic = {
+  user_id: string;
+  language_profile_id: string;
+  language_note_link_id: string;
+  language_topic_id: string;
+  created_at: string;
+};
+
+export type LanguageNoteCandidate = {
+  id: string;
+  folder_id: string | null;
+  title: string;
+  is_pinned: boolean;
+  position: number;
+  updated_at: string;
+};
+
+export type LanguageNoteListItem = {
+  link_id: string;
+  link_created_at: string;
+  note: LanguageNoteCandidate;
+  topic_ids: string[];
+  folder_path: string[];
+};
+
+export type NoteLanguageAssociation = {
+  link_id: string;
+  language_profile_id: string;
+  language_name: string;
+  profile_archived_at: string | null;
+  topic_ids: string[];
+};

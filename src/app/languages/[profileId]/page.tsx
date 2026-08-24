@@ -11,7 +11,7 @@ export default async function LanguageProfileOverviewPage({
   const { supabase, userId, profile } = await loadLanguageProfile(profileId);
   if (!profile) return null;
 
-  const [vocabularyResult, topicResult, recentResult, dueCount] =
+  const [vocabularyResult, topicResult, recentResult, noteLinkResult, dueCount] =
     await Promise.all([
       supabase
         .from("vocabulary_items")
@@ -32,20 +32,56 @@ export default async function LanguageProfileOverviewPage({
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(4),
+      supabase
+        .from("language_note_links")
+        .select("id, note_id, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .eq("language_profile_id", profileId)
+        .order("created_at", { ascending: false })
+        .limit(4),
       countDueReviewCards(supabase, userId, profileId),
     ]);
 
-  if (vocabularyResult.error || topicResult.error || recentResult.error) {
+  if (
+    vocabularyResult.error ||
+    topicResult.error ||
+    recentResult.error ||
+    noteLinkResult.error
+  ) {
     console.error("Could not load language overview:", {
       vocabulary: vocabularyResult.error,
       topics: topicResult.error,
       recent: recentResult.error,
+      notes: noteLinkResult.error,
     });
   }
 
   const vocabularyCount = vocabularyResult.count ?? 0;
   const topicCount = topicResult.count ?? 0;
   const recent = recentResult.data ?? [];
+  const linkedNoteCount = noteLinkResult.count ?? 0;
+  const recentNoteLinks = noteLinkResult.data ?? [];
+  const recentNoteData =
+    recentNoteLinks.length > 0
+      ? await supabase
+          .from("notes")
+          .select("id, title, updated_at")
+          .eq("user_id", userId)
+          .in(
+            "id",
+            recentNoteLinks.map((link) => link.note_id),
+          )
+      : { data: [], error: null };
+  if (recentNoteData.error) {
+    console.error("Could not load recent linked Notes:", recentNoteData.error);
+  }
+  const noteById = new Map(
+    (recentNoteData.data ?? []).map((note) => [note.id, note]),
+  );
+  const recentLinkedNotes = recentNoteLinks.flatMap((link) => {
+    const note = noteById.get(link.note_id);
+    return note ? [note] : [];
+  });
 
   return (
     <div className="grid grid-cols-1 gap-6 py-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.6fr)]">
@@ -94,6 +130,12 @@ export default async function LanguageProfileOverviewPage({
             Browse topics
           </Link>
           <Link
+            href={`/languages/${profileId}/notes`}
+            className="rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+          >
+            Open Notes
+          </Link>
+          <Link
             href={`/languages/${profileId}/practice`}
             className="rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
           >
@@ -118,6 +160,26 @@ export default async function LanguageProfileOverviewPage({
             </div>
           </div>
         )}
+
+        {recentLinkedNotes.length > 0 && (
+          <div className="mt-7 border-t border-border pt-6">
+            <p className="text-xs tracking-[0.2em] text-muted">RECENT NOTES</p>
+            <div className="mt-4 divide-y divide-border">
+              {recentLinkedNotes.map((note) => (
+                <Link
+                  key={note.id}
+                  href={`/notes/${note.id}`}
+                  className="group flex items-center justify-between gap-4 py-3 text-sm"
+                >
+                  <span className="truncate text-foreground transition-colors group-hover:text-accent">
+                    {note.title || "Untitled"}
+                  </span>
+                  <span className="shrink-0 text-muted">→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <aside className="space-y-6">
@@ -131,6 +193,10 @@ export default async function LanguageProfileOverviewPage({
             <div>
               <dt className="text-sm text-muted">Topics</dt>
               <dd className="mt-1 text-2xl font-light">{topicCount}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted">Notes</dt>
+              <dd className="mt-1 text-2xl font-light">{linkedNoteCount}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted">Due</dt>

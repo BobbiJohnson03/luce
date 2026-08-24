@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { sortTopics } from "@/lib/languages/topics";
 import type {
+  LanguageNoteCandidate,
   LanguageTopic,
   VocabularyItem,
 } from "@/lib/languages/types";
@@ -16,6 +17,8 @@ export function TopicDetailClient({
   topics,
   vocabulary,
   vocabularyCount,
+  linkedNotes,
+  linkedNoteCount,
   page,
   pageSize,
 }: {
@@ -24,6 +27,8 @@ export function TopicDetailClient({
   topics: LanguageTopic[];
   vocabulary: VocabularyItem[];
   vocabularyCount: number;
+  linkedNotes: LanguageNoteCandidate[];
+  linkedNoteCount: number;
   page: number;
   pageSize: number;
 }) {
@@ -178,6 +183,44 @@ export function TopicDetailClient({
           )}
         </section>
       </div>
+
+      <section className="mt-6 rounded-2xl border border-border bg-surface/30 p-5 sm:p-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs tracking-[0.2em] text-muted">NOTES</p>
+            <p className="mt-2 text-sm text-muted-strong">
+              {linkedNoteCount} {linkedNoteCount === 1 ? "Note" : "Notes"}
+            </p>
+          </div>
+          <Link
+            href={`/languages/${profileId}/notes`}
+            className="text-xs text-muted transition-colors hover:text-foreground"
+          >
+            Open Language Notes →
+          </Link>
+        </div>
+
+        {linkedNotes.length === 0 ? (
+          <p className="mt-6 text-sm leading-relaxed text-muted">
+            No linked Notes are assigned to this topic.
+          </p>
+        ) : (
+          <div className="mt-5 divide-y divide-border border-t border-border">
+            {linkedNotes.map((note) => (
+              <Link
+                key={note.id}
+                href={`/notes/${note.id}`}
+                className="group flex items-center justify-between gap-4 py-3 text-sm"
+              >
+                <span className="truncate text-foreground transition-colors group-hover:text-accent">
+                  {note.title || "Untitled"}
+                </span>
+                <span className="shrink-0 text-muted">→</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
 
       <TopicDialog
         open={addingChild}

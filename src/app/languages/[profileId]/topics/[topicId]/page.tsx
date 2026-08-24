@@ -5,7 +5,11 @@ import {
   loadLanguageProfile,
   VOCABULARY_ITEM_COLUMNS,
 } from "@/lib/languages/server";
-import type { LanguageTopic, VocabularyItem } from "@/lib/languages/types";
+import type {
+  LanguageNoteCandidate,
+  LanguageTopic,
+  VocabularyItem,
+} from "@/lib/languages/types";
 
 const PAGE_SIZE = 50;
 
@@ -76,19 +80,87 @@ export default async function TopicDetailPage({
 
   const from = (page - 1) * PAGE_SIZE;
   const selectColumns = `${VOCABULARY_ITEM_COLUMNS}, vocabulary_topics!vocabulary_topics_vocabulary_owner_profile_fk!inner(language_topic_id)`;
-  const { data: vocabularyData, error: vocabularyError, count } = await supabase
-    .from("vocabulary_items")
-    .select(selectColumns, { count: "exact" })
-    .eq("user_id", userId)
-    .eq("language_profile_id", profileId)
-    .is("archived_at", null)
-    .eq("vocabulary_topics.language_topic_id", topicId)
-    .order("term", { ascending: true })
-    .range(from, from + PAGE_SIZE - 1);
+  const [vocabularyResult, noteTopicResult] = await Promise.all([
+    supabase
+      .from("vocabulary_items")
+      .select(selectColumns, { count: "exact" })
+      .eq("user_id", userId)
+      .eq("language_profile_id", profileId)
+      .is("archived_at", null)
+      .eq("vocabulary_topics.language_topic_id", topicId)
+      .order("term", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1),
+    supabase
+      .from("language_note_topics")
+      .select("language_note_link_id, created_at", { count: "exact" })
+      .eq("user_id", userId)
+      .eq("language_profile_id", profileId)
+      .eq("language_topic_id", topicId)
+      .order("created_at", { ascending: false })
+      .limit(6),
+  ]);
+
+  const {
+    data: vocabularyData,
+    error: vocabularyError,
+    count: vocabularyCount,
+  } = vocabularyResult;
 
   if (vocabularyError) {
     console.error("Could not load topic vocabulary:", vocabularyError);
   }
+
+  if (noteTopicResult.error) {
+    console.error("Could not load topic Notes:", noteTopicResult.error);
+  }
+
+  const noteLinkIds = (noteTopicResult.data ?? []).map(
+    (assignment) => assignment.language_note_link_id,
+  );
+  const noteLinkResult =
+    noteLinkIds.length > 0
+      ? await supabase
+          .from("language_note_links")
+          .select("id, note_id")
+          .eq("user_id", userId)
+          .eq("language_profile_id", profileId)
+          .in("id", noteLinkIds)
+      : { data: [], error: null };
+
+  if (noteLinkResult.error) {
+    console.error("Could not load Topic Note links:", noteLinkResult.error);
+  }
+
+  const noteIdByLinkId = new Map(
+    (noteLinkResult.data ?? []).map((link) => [link.id, link.note_id]),
+  );
+  const noteIds = noteLinkIds.flatMap((linkId) => {
+    const noteId = noteIdByLinkId.get(linkId);
+    return noteId ? [noteId] : [];
+  });
+  const noteResult =
+    noteIds.length > 0
+      ? await supabase
+          .from("notes")
+          .select("id, folder_id, title, is_pinned, position, updated_at")
+          .eq("user_id", userId)
+          .in("id", noteIds)
+      : { data: [], error: null };
+
+  if (noteResult.error) {
+    console.error("Could not load Topic Notes:", noteResult.error);
+  }
+
+  const noteById = new Map(
+    ((noteResult.data as LanguageNoteCandidate[] | null) ?? []).map((note) => [
+      note.id,
+      note,
+    ]),
+  );
+  const linkedNotes = noteIds.flatMap((noteId) => {
+    const note = noteById.get(noteId);
+    return note ? [note] : [];
+  });
 
   return (
     <TopicDetailClient
@@ -100,7 +172,9 @@ export default async function TopicDetailPage({
           ? []
           : ((vocabularyData ?? []) as unknown as VocabularyItem[])
       }
-      vocabularyCount={vocabularyError ? 0 : (count ?? 0)}
+      vocabularyCount={vocabularyError ? 0 : (vocabularyCount ?? 0)}
+      linkedNotes={noteResult.error ? [] : linkedNotes}
+      linkedNoteCount={noteTopicResult.error ? 0 : (noteTopicResult.count ?? 0)}
       page={page}
       pageSize={PAGE_SIZE}
     />
