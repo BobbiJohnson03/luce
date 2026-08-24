@@ -93,6 +93,12 @@ export default async function LanguageProfileOverviewPage({
           >
             Browse topics
           </Link>
+          <Link
+            href={`/languages/${profileId}/practice`}
+            className="rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+          >
+            Practice →
+          </Link>
         </div>
 
         {recent.length > 0 && (

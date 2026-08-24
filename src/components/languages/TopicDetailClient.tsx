@@ -110,12 +110,22 @@ export function TopicDetailClient({
                 {vocabularyCount} {vocabularyCount === 1 ? "item" : "items"}
               </p>
             </div>
-            <Link
-              href={`/languages/${profileId}/vocabulary?topic=${topic.id}`}
-              className="text-xs text-muted transition-colors hover:text-foreground"
-            >
-              Open filtered view →
-            </Link>
+            <div className="flex flex-wrap items-center gap-4">
+              {vocabularyCount > 0 && (
+                <Link
+                  href={`/languages/${profileId}/practice?topic=${topic.id}`}
+                  className="text-xs text-muted transition-colors hover:text-foreground"
+                >
+                  Practice topic →
+                </Link>
+              )}
+              <Link
+                href={`/languages/${profileId}/vocabulary?topic=${topic.id}`}
+                className="text-xs text-muted transition-colors hover:text-foreground"
+              >
+                Open filtered view →
+              </Link>
+            </div>
           </div>
 
           {vocabulary.length === 0 ? (

@@ -7,6 +7,7 @@ const TABS = [
   { label: "Overview", segment: "" },
   { label: "Vocabulary", segment: "/vocabulary" },
   { label: "Topics", segment: "/topics" },
+  { label: "Practice", segment: "/practice" },
 ] as const;
 
 export function LanguageProfileNav({ profileId }: { profileId: string }) {

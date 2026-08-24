@@ -67,6 +67,12 @@ export function VocabularyPageClient({
               Review due ({dueCount})
             </Link>
           )}
+          <Link
+            href={`/languages/${profileId}/practice`}
+            className="w-fit rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+          >
+            Practice vocabulary →
+          </Link>
           <button
             type="button"
             onClick={() => setAdding(true)}
