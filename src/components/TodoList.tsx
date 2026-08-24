@@ -4,8 +4,10 @@ import { useOptimistic, useRef, useTransition } from "react";
 import type { Todo } from "@/lib/types";
 import { addTodo, toggleTodo, deleteTodo } from "@/app/dashboard/actions";
 import { useCheckSound } from "@/lib/useCheckSound";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function TodoList({ todos }: { todos: Todo[] }) {
+  const { t } = useI18n();
   const [, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useOptimistic(
     todos,
@@ -40,21 +42,21 @@ export function TodoList({ todos }: { todos: Todo[] }) {
         <input
           name="title"
           required
-          placeholder="Nowe zadanie…"
+          placeholder={t("todos.new")}
           className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-accent"
         />
         <button
           type="submit"
           className="rounded-full border border-border-strong px-4 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          Dodaj
+          {t("todos.add")}
         </button>
       </form>
 
       {/* List */}
       <ul className="mt-5 flex flex-col gap-1">
         {optimistic.length === 0 && (
-          <li className="py-2 text-sm text-muted">Brak zadań. Cisza i spokój.</li>
+          <li className="py-2 text-sm text-muted">{t("todos.empty")}</li>
         )}
         {optimistic.map((todo) => (
           <li
@@ -96,7 +98,7 @@ export function TodoList({ todos }: { todos: Todo[] }) {
             <form action={deleteTodo.bind(null, todo.id)}>
               <button
                 type="submit"
-                aria-label="Usuń zadanie"
+                aria-label={t("todos.delete")}
                 className="text-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
               >
                 ✕
@@ -108,7 +110,12 @@ export function TodoList({ todos }: { todos: Todo[] }) {
 
       {optimistic.length > 0 && (
         <p className="mt-4 text-xs tracking-wide text-muted">
-          {remaining} {remaining === 1 ? "zadanie" : "zadań"} do zrobienia
+          {t(
+            remaining === 1
+              ? "todos.remainingOne"
+              : "todos.remainingOther",
+            { count: remaining },
+          )}
         </p>
       )}
     </div>

@@ -5,9 +5,11 @@ import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { useNotesStore } from "./NotesStore";
 import { DocIcon, StarIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function PinnedNotes({ onNavigate }: { onNavigate?: () => void }) {
   const store = useNotesStore();
+  const { t } = useI18n();
   const params = useParams<{ noteId?: string }>();
 
   const pinned = useMemo(
@@ -26,7 +28,7 @@ export function PinnedNotes({ onNavigate }: { onNavigate?: () => void }) {
     <div>
       <div className="mb-1 flex items-center gap-1.5 px-2 text-[0.7rem] tracking-[0.2em] text-muted">
         <StarIcon filled size={11} className="text-accent/70" />
-        PINNED
+        {t("notes.pinned")}
       </div>
       <div className="flex flex-col">
         {pinned.map((n) => {
@@ -45,7 +47,9 @@ export function PinnedNotes({ onNavigate }: { onNavigate?: () => void }) {
               ].join(" ")}
             >
               <DocIcon className="shrink-0 text-muted" />
-              <span className="truncate">{n.title || "Untitled"}</span>
+              <span className="truncate">
+                {n.title || t("notes.untitled")}
+              </span>
             </Link>
           );
         })}

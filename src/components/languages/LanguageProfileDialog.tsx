@@ -8,8 +8,12 @@ import {
 } from "@/app/languages/actions";
 import { Dialog } from "@/components/notes/Dialog";
 import { useToast } from "@/components/notes/Toast";
-import { LANGUAGE_OPTIONS } from "@/lib/languages/catalog";
+import {
+  getLanguageDisplayName,
+  LANGUAGE_OPTIONS,
+} from "@/lib/languages/catalog";
 import { CEFR_LEVELS, type LanguageProfile } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const fieldClass =
   "w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent disabled:cursor-not-allowed disabled:opacity-60";
@@ -25,6 +29,7 @@ export function LanguageProfileDialog({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { locale, t } = useI18n();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const editing = Boolean(profile);
@@ -50,7 +55,11 @@ export function LanguageProfileDialog({
         return;
       }
 
-      toast.success(profile ? "Language profile updated." : "Language profile created.");
+      toast.success(
+        profile
+          ? t("languages.profileUpdated")
+          : t("languages.profileCreated"),
+      );
       setError("");
       onClose();
       router.refresh();
@@ -61,32 +70,36 @@ export function LanguageProfileDialog({
     <Dialog
       open={open}
       onClose={close}
-      title={editing ? "Profile settings" : "Add language"}
+      title={editing ? t("languages.profileSettings") : t("languages.add")}
       description={
         editing
-          ? "Keep the language itself fixed and adjust how you want to study it."
-          : "Create a quiet space for one language. You can refine it later."
+          ? t("languages.profileSettingsDescription")
+          : t("languages.addDescription")
       }
     >
       <form onSubmit={submit} className="flex flex-col gap-4">
         {profile ? (
           <div>
-            <p className="text-xs tracking-[0.18em] text-muted">LANGUAGE</p>
+            <p className="text-xs tracking-[0.18em] text-muted">
+              {t("languages.languageField")}
+            </p>
             <div className="mt-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm">
-              {profile.language_name}
+              {getLanguageDisplayName(profile.language_code, locale)}
               <span className="ml-2 text-xs text-muted">{profile.language_code}</span>
             </div>
           </div>
         ) : (
           <label className="flex flex-col gap-2">
-            <span className="text-xs tracking-[0.18em] text-muted">LANGUAGE</span>
+            <span className="text-xs tracking-[0.18em] text-muted">
+              {t("languages.languageField")}
+            </span>
             <select name="language_code" required defaultValue="" className={fieldClass}>
               <option value="" disabled>
-                Choose a language
+                {t("languages.chooseLanguage")}
               </option>
               {LANGUAGE_OPTIONS.map((language) => (
                 <option key={language.code} value={language.code}>
-                  {language.name}
+                  {getLanguageDisplayName(language.code, locale)}
                 </option>
               ))}
             </select>
@@ -95,7 +108,7 @@ export function LanguageProfileDialog({
 
         <label className="flex flex-col gap-2">
           <span className="text-xs tracking-[0.18em] text-muted">
-            PRIMARY TRANSLATION LANGUAGE
+            {t("languages.translationField")}
           </span>
           <select
             name="translation_language_code"
@@ -104,11 +117,11 @@ export function LanguageProfileDialog({
             className={fieldClass}
           >
             <option value="" disabled>
-              Choose a language
+              {t("languages.chooseLanguage")}
             </option>
             {LANGUAGE_OPTIONS.map((language) => (
               <option key={language.code} value={language.code}>
-                {language.name}
+                {getLanguageDisplayName(language.code, locale)}
               </option>
             ))}
           </select>
@@ -116,13 +129,15 @@ export function LanguageProfileDialog({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-2">
-            <span className="text-xs tracking-[0.18em] text-muted">CURRENT LEVEL</span>
+            <span className="text-xs tracking-[0.18em] text-muted">
+              {t("languages.currentField")}
+            </span>
             <select
               name="current_cefr"
               defaultValue={profile?.current_cefr ?? ""}
               className={fieldClass}
             >
-              <option value="">Not set</option>
+              <option value="">{t("common.notSet")}</option>
               {CEFR_LEVELS.map((level) => (
                 <option key={level} value={level}>
                   {level}
@@ -132,13 +147,15 @@ export function LanguageProfileDialog({
           </label>
 
           <label className="flex flex-col gap-2">
-            <span className="text-xs tracking-[0.18em] text-muted">TARGET LEVEL</span>
+            <span className="text-xs tracking-[0.18em] text-muted">
+              {t("languages.targetField")}
+            </span>
             <select
               name="target_cefr"
               defaultValue={profile?.target_cefr ?? ""}
               className={fieldClass}
             >
-              <option value="">Not set</option>
+              <option value="">{t("common.notSet")}</option>
               {CEFR_LEVELS.map((level) => (
                 <option key={level} value={level}>
                   {level}
@@ -150,7 +167,10 @@ export function LanguageProfileDialog({
 
         <label className="flex flex-col gap-2">
           <span className="text-xs tracking-[0.18em] text-muted">
-            DAILY GOAL <span className="tracking-normal">· optional minutes</span>
+            {t("languages.dailyGoalField")} {" "}
+            <span className="tracking-normal">
+              · {t("languages.optionalMinutes")}
+            </span>
           </span>
           <input
             type="number"
@@ -159,7 +179,7 @@ export function LanguageProfileDialog({
             max={1440}
             step={1}
             defaultValue={profile?.daily_goal_minutes ?? ""}
-            placeholder="e.g. 20"
+            placeholder={t("languages.dailyGoalPlaceholder")}
             className={`${fieldClass} placeholder:text-muted/60`}
           />
         </label>
@@ -177,14 +197,18 @@ export function LanguageProfileDialog({
             disabled={pending}
             className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
             disabled={pending}
             className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {pending ? "Saving…" : editing ? "Save changes" : "Add language"}
+            {pending
+              ? t("common.saving")
+              : editing
+                ? t("languages.saveChanges")
+                : t("languages.add")}
           </button>
         </div>
       </form>

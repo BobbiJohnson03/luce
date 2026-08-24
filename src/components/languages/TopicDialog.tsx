@@ -10,6 +10,7 @@ import { Dialog } from "@/components/notes/Dialog";
 import { useToast } from "@/components/notes/Toast";
 import { topicDescendantIds, topicPathLabels } from "@/lib/languages/topics";
 import type { LanguageTopic } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const fieldClass =
   "w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted/60 focus:border-accent disabled:cursor-not-allowed disabled:opacity-60";
@@ -31,6 +32,7 @@ export function TopicDialog({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useI18n();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const descendants = topic ? topicDescendantIds(topics, topic.id) : new Set<string>();
@@ -58,7 +60,7 @@ export function TopicDialog({
         return;
       }
 
-      toast.success(topic ? "Topic updated." : "Topic created.");
+      toast.success(topic ? t("topics.updatedToast") : t("topics.createdToast"));
       setError("");
       onClose();
       router.refresh();
@@ -69,12 +71,14 @@ export function TopicDialog({
     <Dialog
       open={open}
       onClose={close}
-      title={topic ? "Edit topic" : "New topic"}
-      description="Topics connect vocabulary by meaning without changing the vocabulary itself."
+      title={topic ? t("topics.edit") : t("topics.new")}
+      description={t("topics.dialogDescription")}
     >
       <form onSubmit={submit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-2">
-          <span className="text-xs tracking-[0.16em] text-muted">NAME</span>
+          <span className="text-xs tracking-[0.16em] text-muted">
+            {t("topics.name")}
+          </span>
           <input
             name="name"
             required
@@ -87,7 +91,8 @@ export function TopicDialog({
 
         <label className="flex flex-col gap-2">
           <span className="text-xs tracking-[0.16em] text-muted">
-            DESCRIPTION <span className="tracking-normal">· optional</span>
+            {t("topics.descriptionField")} {" "}
+            <span className="tracking-normal">· {t("common.optional")}</span>
           </span>
           <textarea
             name="description"
@@ -100,14 +105,15 @@ export function TopicDialog({
 
         <label className="flex flex-col gap-2">
           <span className="text-xs tracking-[0.16em] text-muted">
-            PARENT TOPIC <span className="tracking-normal">· optional</span>
+            {t("topics.parent")} {" "}
+            <span className="tracking-normal">· {t("common.optional")}</span>
           </span>
           <select
             name="parent_id"
             defaultValue={topic?.parent_id ?? defaultParentId ?? ""}
             className={fieldClass}
           >
-            <option value="">No parent</option>
+            <option value="">{t("topics.noParent")}</option>
             {parentOptions.map((candidate) => (
               <option key={candidate.id} value={candidate.id}>
                 {labels.get(candidate.id) ?? candidate.name}
@@ -129,14 +135,18 @@ export function TopicDialog({
             disabled={pending}
             className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
             disabled={pending}
             className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {pending ? "Saving…" : topic ? "Save changes" : "Create topic"}
+            {pending
+              ? t("common.saving")
+              : topic
+                ? t("languages.saveChanges")
+                : t("topics.create")}
           </button>
         </div>
       </form>

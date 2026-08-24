@@ -17,6 +17,7 @@ import { NotesBreadcrumbs } from "./NotesBreadcrumbs";
 import { DropdownMenu, type MenuItem } from "./DropdownMenu";
 import { MoreIcon, MoveIcon, StarIcon, TrashIcon } from "./icons";
 import { NoteLanguageMetadata } from "./NoteLanguageMetadata";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 function EditorSkeleton() {
   return (
@@ -36,8 +37,13 @@ const NoteEditor = dynamic(
 type Status = "saved" | "saving" | "error";
 
 function SaveStatus({ status }: { status: Status }) {
+  const { t } = useI18n();
   const label =
-    status === "saving" ? "Saving…" : status === "error" ? "Save failed" : "Saved";
+    status === "saving"
+      ? t("notes.saving")
+      : status === "error"
+        ? t("notes.saveFailed")
+        : t("notes.saved");
   return (
     <span
       className={[
@@ -78,6 +84,7 @@ export function NoteEditorScreen({
   const searchParams = useSearchParams();
   const store = useNotesStore();
   const actions = useNotesActions();
+  const { t } = useI18n();
   const { error: toastError } = useToast();
 
   const [title, setTitle] = useState(note.title);
@@ -114,9 +121,9 @@ export function NoteEditorScreen({
     } else {
       dirtyRef.current = true;
       setStatus("error");
-      toastError("Autosave failed — your latest edits are not saved yet.");
+      toastError(t("notes.autosaveFailed"));
     }
-  }, [noteId, toastError]);
+  }, [noteId, t, toastError]);
 
   const schedule = useCallback(() => {
     dirtyRef.current = true;
@@ -186,23 +193,23 @@ export function NoteEditorScreen({
 
   const menuItems: MenuItem[] = [
     {
-      label: isPinned ? "Unpin" : "Pin",
+      label: t(isPinned ? "notes.unpin" : "notes.pin"),
       icon: <StarIcon filled={isPinned} />,
       onSelect: () => store.togglePin(note.id, !isPinned),
     },
     {
-      label: "Move",
+      label: t("notes.move"),
       icon: <MoveIcon />,
       onSelect: () =>
         actions.requestMove({
           kind: "note",
           id: note.id,
-          name: titleRef.current || "Untitled",
+          name: titleRef.current || t("notes.untitled"),
           folderId,
         }),
     },
     {
-      label: "Delete",
+      label: t("notes.delete"),
       icon: <TrashIcon />,
       danger: true,
       onSelect: () =>
@@ -210,7 +217,7 @@ export function NoteEditorScreen({
           {
             kind: "note",
             id: note.id,
-            name: titleRef.current || "Untitled",
+            name: titleRef.current || t("notes.untitled"),
             folderId,
           },
           () => {
@@ -229,14 +236,14 @@ export function NoteEditorScreen({
           <SaveStatus status={status} />
           <DropdownMenu
             items={menuItems}
-            label="Note actions"
+            label={t("notes.noteActions")}
             trigger={({ toggle, ref, open }) => (
               <button
                 ref={ref}
                 onClick={toggle}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                aria-label="Note actions"
+                aria-label={t("notes.noteActions")}
                 className="rounded-md p-1 text-muted transition-colors hover:text-foreground"
               >
                 <MoreIcon />
@@ -250,8 +257,8 @@ export function NoteEditorScreen({
         ref={titleInputRef}
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
-        placeholder="Untitled"
-        aria-label="Note title"
+        placeholder={t("notes.untitled")}
+        aria-label={t("notes.noteTitle")}
         className="mt-5 w-full bg-transparent text-3xl font-light tracking-tight text-foreground outline-none placeholder:text-muted/40"
       />
 

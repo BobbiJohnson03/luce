@@ -4,12 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getI18n } from "@/lib/i18n/server";
 
 export type AuthState = { error?: string; notice?: string } | null;
-
-const NOT_CONFIGURED = {
-  error: "Supabase nie jest jeszcze skonfigurowany (uzupełnij .env.local).",
-};
 
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -21,17 +18,18 @@ export async function login(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const { t } = await getI18n();
+  if (!isSupabaseConfigured()) return { error: t("auth.notConfigured") };
   const { email, password } = readCredentials(formData);
   if (!email || !password) {
-    return { error: "Podaj e-mail i hasło." };
+    return { error: t("auth.credentialsRequired") };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: "Nieprawidłowy e-mail lub hasło." };
+    return { error: t("auth.invalidCredentials") };
   }
 
   revalidatePath("/", "layout");
@@ -42,26 +40,28 @@ export async function register(
   _prev: AuthState,
   formData: FormData,
 ): Promise<AuthState> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  const { t } = await getI18n();
+  if (!isSupabaseConfigured()) return { error: t("auth.notConfigured") };
   const { email, password } = readCredentials(formData);
   if (!email || !password) {
-    return { error: "Podaj e-mail i hasło." };
+    return { error: t("auth.credentialsRequired") };
   }
   if (password.length < 6) {
-    return { error: "Hasło musi mieć co najmniej 6 znaków." };
+    return { error: t("auth.passwordTooShort") };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    return { error: error.message };
+    console.error("Registration failed:", error);
+    return { error: t("auth.registrationFailed") };
   }
 
   // If email confirmation is enabled in Supabase, there's no session yet.
   if (!data.session) {
     return {
-      notice: "Sprawdź skrzynkę — wysłaliśmy link potwierdzający rejestrację.",
+      notice: t("auth.confirmEmail"),
     };
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { CloseIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * Minimal Luce-styled modal dialog: dark surface, subtle border, no heavy
@@ -23,6 +24,7 @@ export function Dialog({
   panelClassName?: string;
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
@@ -102,7 +104,7 @@ export function Dialog({
           </div>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("common.close")}
             className="-mr-1 -mt-1 rounded-md p-1 text-muted transition-colors hover:text-foreground"
           >
             <CloseIcon />

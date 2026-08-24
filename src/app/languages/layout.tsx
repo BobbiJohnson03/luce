@@ -6,21 +6,22 @@ import { SetupNotice } from "@/components/SetupNotice";
 import { ToastProvider } from "@/components/notes/Toast";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
-
-const MENU_ITEMS = [
-  { label: "Panoramica", href: "/dashboard" },
-  { label: "Calendario", href: "/dashboard#calendar" },
-  { label: "To-do", href: "/dashboard#todos" },
-  { label: "Note", href: "/notes" },
-  { label: "Languages", href: "/languages" },
-];
+import { getI18n } from "@/lib/i18n/server";
 
 export default async function LanguagesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = await getI18n();
   if (!isSupabaseConfigured()) return <SetupNotice />;
+  const menuItems = [
+    { label: t("menu.overview"), href: "/dashboard" },
+    { label: t("menu.calendar"), href: "/dashboard#calendar" },
+    { label: t("menu.todos"), href: "/dashboard#todos" },
+    { label: t("menu.notes"), href: "/notes" },
+    { label: t("menu.languages"), href: "/languages" },
+  ];
 
   const supabase = await createClient();
   const {
@@ -37,7 +38,7 @@ export default async function LanguagesLayout({
 
         <header className="flex items-center justify-between px-6 py-6 sm:px-10">
           <div className="flex items-center gap-6">
-            <MenuOverlay items={MENU_ITEMS} />
+            <MenuOverlay items={menuItems} />
             <Logo href="/dashboard" />
           </div>
           <div className="flex items-center gap-5 text-sm text-muted">
@@ -47,7 +48,7 @@ export default async function LanguagesLayout({
                 type="submit"
                 className="transition-colors hover:text-foreground"
               >
-                Wyloguj
+                {t("menu.signOut")}
               </button>
             </form>
           </div>

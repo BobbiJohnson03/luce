@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadActiveReviewSession,
@@ -90,9 +91,10 @@ export async function startReviewSession(
   launchSource: string,
 ): Promise<StartReviewResult> {
   try {
+    const { t } = await getI18n();
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const existing = await loadActiveReviewSession(supabase, userId, profileId);
@@ -111,7 +113,7 @@ export async function startReviewSession(
 
     const due = await loadDueReviewCards(supabase, userId, profileId);
     if (due.length === 0) {
-      return { ok: false, error: "You're caught up. Nothing is due right now." };
+      return { ok: false, error: t("review.caughtUp") };
     }
 
     const { data, error } = await supabase
@@ -137,7 +139,8 @@ export async function startReviewSession(
     return { ok: true, sessionId: data.id, resumed: false };
   } catch (error) {
     console.error("Could not start review session:", error);
-    return { ok: false, error: "The review session could not be started." };
+    const { t } = await getI18n();
+    return { ok: false, error: t("review.errorStart") };
   }
 }
 
@@ -156,15 +159,24 @@ export async function recordReview(
   responseTimeMs: number | null,
 ): Promise<RecordReviewResult> {
   try {
+    const { t } = await getI18n();
     if (
       !UUID_PATTERN.test(profileId) ||
       !UUID_PATTERN.test(sessionId) ||
       !UUID_PATTERN.test(vocabularyItemId)
     ) {
-      return { ok: false, code: "error", message: "Invalid review request." };
+      return {
+        ok: false,
+        code: "error",
+        message: t("review.errorInvalidRequest"),
+      };
     }
     if (![1, 2, 3, 4].includes(rating)) {
-      return { ok: false, code: "error", message: "Invalid rating." };
+      return {
+        ok: false,
+        code: "error",
+        message: t("review.errorInvalidRating"),
+      };
     }
 
     const { supabase, userId } = await requireUser();
@@ -181,7 +193,7 @@ export async function recordReview(
       return {
         ok: false,
         code: "unavailable",
-        message: "This card is no longer available.",
+        message: t("review.errorUnavailable"),
       };
     }
 
@@ -232,10 +244,11 @@ export async function recordReview(
     };
   } catch (error) {
     console.error("Could not record review:", error);
+    const { t } = await getI18n();
     return {
       ok: false,
       code: "error",
-      message: "This answer could not be saved. Please try again.",
+      message: t("review.errorSave"),
     };
   }
 }

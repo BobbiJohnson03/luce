@@ -5,7 +5,9 @@ import "@blocknote/mantine/style.css";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import type { PartialBlock } from "@blocknote/core";
+import { en as blockNoteEn, pl as blockNotePl } from "@blocknote/core/locales";
 import { useTheme } from "@/components/theme/ThemeProvider";
+import { useI18n } from "@/components/i18n/I18nProvider";
 import type { NoteContent } from "@/lib/notes/types";
 
 /**
@@ -25,12 +27,14 @@ export function NoteEditor({
   onChange: (blocks: NoteContent) => void;
 }) {
   const { resolvedTheme } = useTheme();
+  const { locale } = useI18n();
   const editor = useCreateBlockNote({
     // BlockNote rejects an empty array; use undefined to start with a blank doc.
     initialContent:
       initialContent && initialContent.length > 0
         ? (initialContent as PartialBlock[])
         : undefined,
+    dictionary: locale === "pl" ? blockNotePl : blockNoteEn,
   });
 
   return (

@@ -15,6 +15,7 @@ import {
   togglePin as togglePinAction,
 } from "@/app/notes/actions";
 import { useToast } from "./Toast";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 type NotesStore = {
   folders: NoteFolder[];
@@ -53,6 +54,7 @@ export function NotesStoreProvider({
 }) {
   const router = useRouter();
   const { error: failed } = useToast();
+  const { t } = useI18n();
 
   // Server props are the source of truth; local state allows optimistic edits.
   // We re-seed from props during render (React's recommended way to reset state
@@ -91,39 +93,39 @@ export function NotesStoreProvider({
     async (name: string, parentId: string | null) => {
       const res = await createFolderAction(name, parentId);
       if (!res.ok) {
-        failed("Could not create folder.");
+        failed(t("notes.errorCreateFolder"));
         return null;
       }
       if (parentId) expand(parentId);
       return res.data.id;
     },
-    [expand, failed],
+    [expand, failed, t],
   );
 
   const renameFolder = useCallback(
     async (id: string, name: string) => {
       setFolders((prev) => prev.map((f) => (f.id === id ? { ...f, name } : f)));
       const res = await renameFolderAction(id, name);
-      if (!res.ok) failed("Could not rename folder.");
+      if (!res.ok) failed(t("notes.errorRenameFolder"));
     },
-    [failed],
+    [failed, t],
   );
 
   const deleteFolder = useCallback(
     async (id: string) => {
       const res = await deleteFolderAction(id);
-      if (!res.ok) failed("Could not delete folder.");
+      if (!res.ok) failed(t("notes.errorDeleteFolder"));
     },
-    [failed],
+    [failed, t],
   );
 
   const moveFolder = useCallback(
     async (id: string, parentId: string | null) => {
       const res = await moveFolderAction(id, parentId);
-      if (!res.ok) failed(res.error || "Could not move folder.");
+      if (!res.ok) failed(res.error || t("notes.errorMoveFolder"));
       else if (parentId) expand(parentId);
     },
-    [expand, failed],
+    [expand, failed, t],
   );
 
   // ── note mutations ─────────────────────────────────────────────────────────
@@ -131,23 +133,23 @@ export function NotesStoreProvider({
     async (title: string, folderId: string | null) => {
       const res = await createNoteAction(title, folderId);
       if (!res.ok) {
-        failed("Could not create note.");
+        failed(t("notes.errorCreateNote"));
         return null;
       }
       if (folderId) expand(folderId);
       return res.data.id;
     },
-    [expand, failed],
+    [expand, failed, t],
   );
 
   const renameNote = useCallback(
     (id: string, title: string) => {
       setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, title } : n)));
       return renameNoteAction(id, title).then((res) => {
-        if (!res.ok) failed("Could not rename note.");
+        if (!res.ok) failed(t("notes.errorRenameNote"));
       });
     },
-    [failed],
+    [failed, t],
   );
 
   const patchNoteTitle = useCallback((id: string, title: string) => {
@@ -157,18 +159,18 @@ export function NotesStoreProvider({
   const deleteNote = useCallback(
     async (id: string) => {
       const res = await deleteNoteAction(id);
-      if (!res.ok) failed("Could not delete note.");
+      if (!res.ok) failed(t("notes.errorDeleteNote"));
     },
-    [failed],
+    [failed, t],
   );
 
   const moveNote = useCallback(
     async (id: string, folderId: string | null) => {
       const res = await moveNoteAction(id, folderId);
-      if (!res.ok) failed("Could not move note.");
+      if (!res.ok) failed(t("notes.errorMoveNote"));
       else if (folderId) expand(folderId);
     },
-    [expand, failed],
+    [expand, failed, t],
   );
 
   const togglePin = useCallback(
@@ -178,11 +180,11 @@ export function NotesStoreProvider({
       );
       const res = await togglePinAction(id, next);
       if (!res.ok) {
-        failed("Could not update pin.");
+        failed(t("notes.errorPin"));
         router.refresh();
       }
     },
-    [router, failed],
+    [router, failed, t],
   );
 
   const value = useMemo<NotesStore>(

@@ -12,6 +12,8 @@ import type {
 } from "@/lib/languages/types";
 import { buildFolderPath } from "@/lib/notes/tree";
 import type { NoteFolder } from "@/lib/notes/types";
+import { getI18n } from "@/lib/i18n/server";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
 const PAGE_SIZE = 50;
 const LINK_COLUMNS =
@@ -31,6 +33,7 @@ export default async function LanguageNotesPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { profileId } = await params;
+  const { locale, t } = await getI18n();
   const filters = await searchParams;
   const query = firstParam(filters.q).trim().slice(0, 160);
   const pageRaw = Number.parseInt(firstParam(filters.page), 10);
@@ -79,9 +82,13 @@ export default async function LanguageNotesPage({
     });
     return (
       <div className="py-12">
-        <p className="text-xs tracking-[0.25em] text-muted">NOTES</p>
-        <h2 className="mt-4 text-2xl font-light">Linked Notes are unavailable.</h2>
-        <p className="mt-3 text-sm text-muted">Please refresh and try again.</p>
+        <p className="text-xs tracking-[0.25em] text-muted">
+          {t("languageNotes.label")}
+        </p>
+        <h2 className="mt-4 text-2xl font-light">
+          {t("languageNotes.unavailable")}
+        </h2>
+        <p className="mt-3 text-sm text-muted">{t("common.tryAgain")}</p>
       </div>
     );
   }
@@ -150,7 +157,7 @@ export default async function LanguageNotesPage({
   return (
     <LanguageNotesPageClient
       profileId={profileId}
-      profileName={profile.language_name}
+      profileName={getLanguageDisplayName(profile.language_code, locale)}
       items={items}
       topics={topics}
       candidates={candidates}

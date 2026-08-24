@@ -5,21 +5,22 @@ import { signOut } from "@/app/auth/actions";
 import { Logo } from "@/components/Logo";
 import { MenuOverlay } from "@/components/MenuOverlay";
 import { SetupNotice } from "@/components/SetupNotice";
-
-const MENU_ITEMS = [
-  { label: "Panoramica", href: "/dashboard" },
-  { label: "Calendario", href: "#calendar" },
-  { label: "To-do", href: "#todos" },
-  { label: "Note", href: "/notes" },
-  { label: "Languages", href: "/languages" },
-];
+import { getI18n } from "@/lib/i18n/server";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = await getI18n();
   if (!isSupabaseConfigured()) return <SetupNotice />;
+  const menuItems = [
+    { label: t("menu.overview"), href: "/dashboard" },
+    { label: t("menu.calendar"), href: "#calendar" },
+    { label: t("menu.todos"), href: "#todos" },
+    { label: t("menu.notes"), href: "/notes" },
+    { label: t("menu.languages"), href: "/languages" },
+  ];
 
   const supabase = await createClient();
   const {
@@ -37,7 +38,7 @@ export default async function DashboardLayout({
 
       <header className="flex items-center justify-between px-6 py-6 sm:px-10">
         <div className="flex items-center gap-6">
-          <MenuOverlay items={MENU_ITEMS} />
+          <MenuOverlay items={menuItems} />
           <Logo href="/dashboard" />
         </div>
         <div className="flex items-center gap-5 text-sm text-muted">
@@ -47,7 +48,7 @@ export default async function DashboardLayout({
               type="submit"
               className="transition-colors hover:text-foreground"
             >
-              Wyloguj
+              {t("menu.signOut")}
             </button>
           </form>
         </div>

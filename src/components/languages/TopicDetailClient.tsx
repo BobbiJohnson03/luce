@@ -10,6 +10,7 @@ import type {
 } from "@/lib/languages/types";
 import { TopicActions } from "./TopicActions";
 import { TopicDialog } from "./TopicDialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function TopicDetailClient({
   profileId,
@@ -33,6 +34,7 @@ export function TopicDetailClient({
   pageSize: number;
 }) {
   const [addingChild, setAddingChild] = useState(false);
+  const { t } = useI18n();
   const children = topics
     .filter((candidate) => candidate.parent_id === topic.id)
     .sort(sortTopics);
@@ -44,12 +46,14 @@ export function TopicDetailClient({
         href={`/languages/${profileId}/topics`}
         className="text-sm text-muted transition-colors hover:text-foreground"
       >
-        ← All topics
+        {t("topics.all")}
       </Link>
 
       <div className="mt-6 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="text-xs tracking-[0.25em] text-muted">TOPIC</p>
+          <p className="text-xs tracking-[0.25em] text-muted">
+            {t("topics.singularLabel")}
+          </p>
           <h2 className="mt-3 text-3xl font-light tracking-tight sm:text-4xl">
             {topic.name}
           </h2>
@@ -71,9 +75,16 @@ export function TopicDetailClient({
         <section className="rounded-2xl border border-border bg-surface/30 p-5 sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs tracking-[0.2em] text-muted">CHILD TOPICS</p>
+              <p className="text-xs tracking-[0.2em] text-muted">
+                {t("topics.childLabel")}
+              </p>
               <p className="mt-2 text-sm text-muted-strong">
-                {children.length} {children.length === 1 ? "topic" : "topics"}
+                {t(
+                  children.length === 1
+                    ? "topics.countOne"
+                    : "topics.countOther",
+                  { count: children.length },
+                )}
               </p>
             </div>
             <button
@@ -81,13 +92,13 @@ export function TopicDetailClient({
               onClick={() => setAddingChild(true)}
               className="rounded-full border border-border-strong px-3 py-1.5 text-xs text-foreground transition-colors hover:border-accent hover:text-accent"
             >
-              + Add child
+              + {t("topics.addChild")}
             </button>
           </div>
 
           {children.length === 0 ? (
             <p className="mt-6 text-sm leading-relaxed text-muted">
-              This topic has no nested topics.
+              {t("topics.noChildren")}
             </p>
           ) : (
             <div className="mt-5 divide-y divide-border border-t border-border">
@@ -110,9 +121,16 @@ export function TopicDetailClient({
         <section className="rounded-2xl border border-border bg-surface/30 p-5 sm:p-6">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xs tracking-[0.2em] text-muted">VOCABULARY</p>
+              <p className="text-xs tracking-[0.2em] text-muted">
+                {t("vocabulary.label")}
+              </p>
               <p className="mt-2 text-sm text-muted-strong">
-                {vocabularyCount} {vocabularyCount === 1 ? "item" : "items"}
+                {t(
+                  vocabularyCount === 1
+                    ? "topics.vocabularyItemsOne"
+                    : "topics.vocabularyItemsOther",
+                  { count: vocabularyCount },
+                )}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-4">
@@ -121,21 +139,21 @@ export function TopicDetailClient({
                   href={`/languages/${profileId}/practice?topic=${topic.id}`}
                   className="text-xs text-muted transition-colors hover:text-foreground"
                 >
-                  Practice topic →
+                  {t("topics.practice")}
                 </Link>
               )}
               <Link
                 href={`/languages/${profileId}/vocabulary?topic=${topic.id}`}
                 className="text-xs text-muted transition-colors hover:text-foreground"
               >
-                Open filtered view →
+                {t("topics.filteredView")}
               </Link>
             </div>
           </div>
 
           {vocabulary.length === 0 ? (
             <p className="mt-6 text-sm leading-relaxed text-muted">
-              No active vocabulary is assigned to this topic.
+              {t("topics.noVocabulary")}
             </p>
           ) : (
             <div className="mt-5 divide-y divide-border border-t border-border">
@@ -153,7 +171,7 @@ export function TopicDetailClient({
 
           {pageCount > 1 && (
             <nav
-              aria-label="Topic vocabulary pages"
+              aria-label={t("topics.vocabularyPages")}
               className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs"
             >
               {page > 1 ? (
@@ -161,20 +179,20 @@ export function TopicDetailClient({
                   href={`?page=${page - 1}`}
                   className="text-muted transition-colors hover:text-foreground"
                 >
-                  ← Previous
+                  ← {t("common.previous")}
                 </Link>
               ) : (
                 <span />
               )}
               <span className="text-muted">
-                Page {page} of {pageCount}
+                {t("common.pageOf", { page, total: pageCount })}
               </span>
               {page < pageCount ? (
                 <Link
                   href={`?page=${page + 1}`}
                   className="text-muted transition-colors hover:text-foreground"
                 >
-                  Next →
+                  {t("common.next")} →
                 </Link>
               ) : (
                 <span />
@@ -187,22 +205,29 @@ export function TopicDetailClient({
       <section className="mt-6 rounded-2xl border border-border bg-surface/30 p-5 sm:p-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-xs tracking-[0.2em] text-muted">NOTES</p>
+            <p className="text-xs tracking-[0.2em] text-muted">
+              {t("notes.label")}
+            </p>
             <p className="mt-2 text-sm text-muted-strong">
-              {linkedNoteCount} {linkedNoteCount === 1 ? "Note" : "Notes"}
+              {t(
+                linkedNoteCount === 1
+                  ? "topics.notesCountOne"
+                  : "topics.notesCountOther",
+                { count: linkedNoteCount },
+              )}
             </p>
           </div>
           <Link
             href={`/languages/${profileId}/notes`}
             className="text-xs text-muted transition-colors hover:text-foreground"
           >
-            Open Language Notes →
+            {t("topics.openNotes")}
           </Link>
         </div>
 
         {linkedNotes.length === 0 ? (
           <p className="mt-6 text-sm leading-relaxed text-muted">
-            No linked Notes are assigned to this topic.
+            {t("topics.noNotes")}
           </p>
         ) : (
           <div className="mt-5 divide-y divide-border border-t border-border">
@@ -213,7 +238,7 @@ export function TopicDetailClient({
                 className="group flex items-center justify-between gap-4 py-3 text-sm"
               >
                 <span className="truncate text-foreground transition-colors group-hover:text-accent">
-                  {note.title || "Untitled"}
+                  {note.title || t("notes.untitled")}
                 </span>
                 <span className="shrink-0 text-muted">→</span>
               </Link>

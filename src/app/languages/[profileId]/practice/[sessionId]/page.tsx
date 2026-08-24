@@ -13,6 +13,8 @@ import {
   type PracticePlanEntry,
 } from "@/lib/languages/srs/practice";
 import { summarizeAttempts } from "@/lib/languages/srs/summary";
+import { getI18n } from "@/lib/i18n/server";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
 type PracticeConfig = {
   mode?: string;
@@ -20,23 +22,24 @@ type PracticeConfig = {
   plan?: PracticePlanEntry[];
 };
 
-function capitalize(value: string): string {
-  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
-}
-
-function Unavailable({ profileId }: { profileId: string }) {
+async function Unavailable({ profileId }: { profileId: string }) {
+  const { t } = await getI18n();
   return (
     <div className="mx-auto w-full max-w-lg py-16">
-      <p className="text-xs tracking-[0.3em] text-muted">PRACTICE</p>
-      <h2 className="mt-4 text-2xl font-light">This session is unavailable.</h2>
+      <p className="text-xs tracking-[0.3em] text-muted">
+        {t("practice.label")}
+      </p>
+      <h2 className="mt-4 text-2xl font-light">
+        {t("practice.sessionUnavailable")}
+      </h2>
       <p className="mt-3 text-sm text-muted">
-        It may have ended or may not belong to you.
+        {t("practice.sessionUnavailableDescription")}
       </p>
       <Link
         href={`/languages/${profileId}/practice`}
         className="mt-6 inline-block text-sm text-muted transition-colors hover:text-foreground"
       >
-        ← Back to practice
+        {t("practice.back")}
       </Link>
     </div>
   );
@@ -48,6 +51,7 @@ export default async function PracticeSessionPage({
   params: Promise<{ profileId: string; sessionId: string }>;
 }) {
   const { profileId, sessionId } = await params;
+  const { locale, t } = await getI18n();
   const { supabase, userId, profile } = await loadLanguageProfile(profileId);
   if (!profile) return null;
 
@@ -68,9 +72,15 @@ export default async function PracticeSessionPage({
 
   const config = (sessionRow.configuration ?? {}) as PracticeConfig;
   const plan = Array.isArray(config.plan) ? config.plan : [];
-  const modeLabel = capitalize(String(config.mode ?? "practice"));
+  const mode = String(config.mode ?? "mixed");
+  const modeLabel =
+    mode === "recall"
+      ? t("practice.recall")
+      : mode === "reverse"
+        ? t("practice.reverse")
+        : t("practice.mixed");
 
-  let scopeLabel = "All vocabulary";
+  let scopeLabel = t("practice.allVocabulary");
   const topicId = config.scope?.type === "topic" ? config.scope?.topicId : null;
   if (topicId) {
     const { data: topic } = await supabase
@@ -79,7 +89,9 @@ export default async function PracticeSessionPage({
       .eq("id", topicId)
       .eq("user_id", userId)
       .maybeSingle();
-    scopeLabel = topic?.name ? `Topic · ${topic.name}` : "Topic";
+    scopeLabel = topic?.name
+      ? t("practice.scopeTopic", { topic: topic.name })
+      : t("practice.topic");
   }
 
   const attempts = await loadSessionAttempts(supabase, userId, sessionId);
@@ -118,7 +130,12 @@ export default async function PracticeSessionPage({
     cards.push({
       itemId: entry.itemId,
       direction,
-      eyebrow: `PRACTICE · ${direction.toUpperCase()}`,
+      eyebrow: t("practice.cardEyebrow", {
+        direction:
+          direction === "recall"
+            ? t("practice.recall").toLocaleUpperCase(locale)
+            : t("practice.reverse").toLocaleUpperCase(locale),
+      }),
       front: isRecall ? item.term : item.translation,
       backPrimary: isRecall ? item.translation : item.term,
       backSecondary: item.definition,
@@ -131,7 +148,7 @@ export default async function PracticeSessionPage({
     <PracticeSessionClient
       profileId={profileId}
       sessionId={sessionId}
-      languageName={profile.language_name}
+      languageName={getLanguageDisplayName(profile.language_code, locale)}
       cards={cards}
       priorAttempts={attempts}
       startedAtMs={new Date(sessionRow.started_at as string).getTime()}

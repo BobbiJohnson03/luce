@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/lib/i18n/server";
 import { filterLanguageNoteCandidates } from "@/lib/languages/note-links";
 import type {
   LanguageNoteCandidate,
@@ -79,14 +80,15 @@ function errorCode(error: unknown) {
   return String(error.code);
 }
 
-function failed(error: unknown): { ok: false; error: string } {
+async function failed(error: unknown): Promise<{ ok: false; error: string }> {
   console.error("Language Note mutation failed:", error);
+  const { t } = await getI18n();
   if (errorCode(error) === "23505") {
-    return { ok: false, error: "This Note is already linked to that language." };
+    return { ok: false, error: t("languageNotes.errorDuplicate") };
   }
   return {
     ok: false,
-    error: "The language relationship could not be saved. Please try again.",
+    error: t("languageNotes.errorSave"),
   };
 }
 
@@ -95,9 +97,10 @@ export async function searchLinkableNotes(
   query: string,
 ): Promise<LanguageNoteActionResult<LanguageNoteCandidate[]>> {
   try {
+    const { t } = await getI18n();
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const cleanQuery = query.trim().slice(0, 160);
@@ -138,7 +141,8 @@ export async function searchLinkableNotes(
     };
   } catch (error) {
     console.error("Could not search linkable Notes:", error);
-    return { ok: false, error: "Notes could not be searched. Please try again." };
+    const { t } = await getI18n();
+    return { ok: false, error: t("languageNotes.errorSearch") };
   }
 }
 
@@ -148,15 +152,18 @@ export async function linkExistingNote(
   requestedTopicIds: string[],
 ): Promise<LanguageNoteActionResult> {
   try {
+    const { t } = await getI18n();
     if (!UUID_PATTERN.test(noteId)) {
-      return { ok: false, error: "This Note is unavailable." };
+      return { ok: false, error: t("languageNotes.errorNoteUnavailable") };
     }
     const topicIds = normalizeTopicIds(requestedTopicIds);
-    if (!topicIds) return { ok: false, error: "Choose valid language Topics." };
+    if (!topicIds) {
+      return { ok: false, error: t("languageNotes.errorTopicsInvalid") };
+    }
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const { data: note, error: noteError } = await supabase
@@ -166,9 +173,11 @@ export async function linkExistingNote(
       .eq("user_id", userId)
       .maybeSingle();
     if (noteError) throw noteError;
-    if (!note) return { ok: false, error: "This Note is unavailable." };
+    if (!note) {
+      return { ok: false, error: t("languageNotes.errorNoteUnavailable") };
+    }
     if (!(await topicsBelongToProfile(supabase, userId, profileId, topicIds))) {
-      return { ok: false, error: "One or more selected Topics are unavailable." };
+      return { ok: false, error: t("languageNotes.errorTopicsUnavailable") };
     }
 
     const { data: link, error: linkError } = await supabase
@@ -218,18 +227,21 @@ export async function updateLanguageNoteTopics(
   requestedTopicIds: string[],
 ): Promise<LanguageNoteActionResult> {
   try {
+    const { t } = await getI18n();
     if (!UUID_PATTERN.test(linkId)) {
-      return { ok: false, error: "This linked Note is unavailable." };
+      return { ok: false, error: t("languageNotes.errorLinkUnavailable") };
     }
     const topicIds = normalizeTopicIds(requestedTopicIds);
-    if (!topicIds) return { ok: false, error: "Choose valid language Topics." };
+    if (!topicIds) {
+      return { ok: false, error: t("languageNotes.errorTopicsInvalid") };
+    }
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
     if (!(await topicsBelongToProfile(supabase, userId, profileId, topicIds))) {
-      return { ok: false, error: "One or more selected Topics are unavailable." };
+      return { ok: false, error: t("languageNotes.errorTopicsUnavailable") };
     }
 
     const { data: link, error: linkError } = await supabase
@@ -240,7 +252,9 @@ export async function updateLanguageNoteTopics(
       .eq("language_profile_id", profileId)
       .maybeSingle();
     if (linkError) throw linkError;
-    if (!link) return { ok: false, error: "This linked Note is unavailable." };
+    if (!link) {
+      return { ok: false, error: t("languageNotes.errorLinkUnavailable") };
+    }
 
     const { data: existing, error: existingError } = await supabase
       .from("language_note_topics")
@@ -290,8 +304,9 @@ export async function unlinkLanguageNote(
   linkId: string,
 ): Promise<LanguageNoteActionResult> {
   try {
+    const { t } = await getI18n();
     if (!UUID_PATTERN.test(linkId)) {
-      return { ok: false, error: "This linked Note is unavailable." };
+      return { ok: false, error: t("languageNotes.errorLinkUnavailable") };
     }
     const { supabase, userId } = await requireUser();
 
@@ -304,7 +319,9 @@ export async function unlinkLanguageNote(
       .select("id, note_id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This linked Note is unavailable." };
+    if (!data) {
+      return { ok: false, error: t("languageNotes.errorLinkUnavailable") };
+    }
 
     revalidateLanguageNote(profileId, data.note_id);
     return { ok: true, data: { id: linkId } };

@@ -9,6 +9,7 @@ import type {
   NoteFolder,
   NoteSummary,
 } from "@/lib/notes/types";
+import { getI18n } from "@/lib/i18n/server";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -23,10 +24,10 @@ export type ActionResult<T = void> =
   | ({ ok: true } & (T extends void ? object : { data: T }))
   | { ok: false; error: string };
 
-function fail(error: unknown): { ok: false; error: string } {
-  const message =
-    error instanceof Error ? error.message : "Something went wrong.";
-  return { ok: false, error: message };
+async function fail(error: unknown): Promise<{ ok: false; error: string }> {
+  console.error("Notes action failed:", error);
+  const { t } = await getI18n();
+  return { ok: false, error: t("notes.errorGeneric") };
 }
 
 // ── Folders ─────────────────────────────────────────────────────────────────
@@ -77,7 +78,10 @@ export async function moveFolder(
     const { supabase } = await requireUser();
     // The database trigger also rejects cycles / cross-user parents; this is a
     // fast client-facing guard for the obvious self-parent case.
-    if (parentId === id) throw new Error("A folder cannot contain itself.");
+    if (parentId === id) {
+      const { t } = await getI18n();
+      return { ok: false, error: t("notes.errorSelfFolder") };
+    }
     const { error } = await supabase
       .from("note_folders")
       .update({ parent_id: parentId })

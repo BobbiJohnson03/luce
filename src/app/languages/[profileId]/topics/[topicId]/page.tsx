@@ -10,6 +10,7 @@ import type {
   LanguageTopic,
   VocabularyItem,
 } from "@/lib/languages/types";
+import { getI18n } from "@/lib/i18n/server";
 
 const PAGE_SIZE = 50;
 
@@ -25,6 +26,7 @@ export default async function TopicDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { profileId, topicId } = await params;
+  const { t } = await getI18n();
   const filters = await searchParams;
   const pageRaw = Number.parseInt(firstParam(filters.page), 10);
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
@@ -56,9 +58,13 @@ export default async function TopicDetailPage({
     });
     return (
       <div className="py-12">
-        <p className="text-xs tracking-[0.25em] text-muted">TOPIC</p>
-        <h2 className="mt-4 text-2xl font-light">Topic details are unavailable.</h2>
-        <p className="mt-3 text-sm text-muted">Please refresh and try again.</p>
+        <p className="text-xs tracking-[0.25em] text-muted">
+          {t("topics.singularLabel")}
+        </p>
+        <h2 className="mt-4 text-2xl font-light">
+          {t("topics.detailUnavailable")}
+        </h2>
+        <p className="mt-3 text-sm text-muted">{t("common.tryAgain")}</p>
       </div>
     );
   }
@@ -66,13 +72,17 @@ export default async function TopicDetailPage({
   if (!topicData) {
     return (
       <div className="py-12">
-        <p className="text-xs tracking-[0.25em] text-muted">TOPIC</p>
-        <h2 className="mt-4 text-2xl font-light">This topic is unavailable.</h2>
+        <p className="text-xs tracking-[0.25em] text-muted">
+          {t("topics.singularLabel")}
+        </p>
+        <h2 className="mt-4 text-2xl font-light">
+          {t("topics.itemUnavailable")}
+        </h2>
         <Link
           href={`/languages/${profileId}/topics`}
           className="mt-5 inline-block text-sm text-muted transition-colors hover:text-foreground"
         >
-          ← Back to Topics
+          {t("topics.back")}
         </Link>
       </div>
     );

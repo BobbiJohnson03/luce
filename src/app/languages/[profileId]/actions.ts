@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 
 export type LanguageContentActionResult =
@@ -8,6 +9,7 @@ export type LanguageContentActionResult =
   | { ok: false; error: string };
 
 type AuthenticatedClient = Awaited<ReturnType<typeof createClient>>;
+type Translate = Awaited<ReturnType<typeof getI18n>>["t"];
 
 type VocabularyInput = {
   term: string;
@@ -59,14 +61,17 @@ function optionalText(formData: FormData, name: string, maxLength: number) {
 
 function readVocabulary(
   formData: FormData,
+  t: Translate,
 ): { ok: true; data: VocabularyInput } | { ok: false; error: string } {
   const term = String(formData.get("term") ?? "").trim();
   const translation = String(formData.get("translation") ?? "").trim();
 
-  if (!term) return { ok: false, error: "Term is required." };
-  if (!translation) return { ok: false, error: "Translation is required." };
+  if (!term) return { ok: false, error: t("vocabulary.errorTermRequired") };
+  if (!translation) {
+    return { ok: false, error: t("vocabulary.errorTranslationRequired") };
+  }
   if (term.length > 300 || translation.length > 500) {
-    return { ok: false, error: "Term or translation is too long." };
+    return { ok: false, error: t("vocabulary.errorTooLong") };
   }
 
   return {
@@ -186,27 +191,33 @@ function databaseMessage(error: unknown) {
   return String(error.message).toLowerCase();
 }
 
-function vocabularyFailure(error: unknown): LanguageContentActionResult {
+async function vocabularyFailure(
+  error: unknown,
+): Promise<LanguageContentActionResult> {
   console.error("Vocabulary mutation failed:", error);
+  const { t } = await getI18n();
   return {
     ok: false,
-    error: "The vocabulary item could not be saved. Please try again.",
+    error: t("vocabulary.errorSave"),
   };
 }
 
-function topicFailure(error: unknown): LanguageContentActionResult {
+async function topicFailure(
+  error: unknown,
+): Promise<LanguageContentActionResult> {
   console.error("Language topic mutation failed:", error);
+  const { t } = await getI18n();
   if (databaseCode(error) === "23505") {
-    return { ok: false, error: "A sibling topic already uses that name." };
+    return { ok: false, error: t("topics.errorSibling") };
   }
   const message = databaseMessage(error);
   if (message.includes("circular") || message.includes("own parent")) {
-    return { ok: false, error: "That parent would create a topic cycle." };
+    return { ok: false, error: t("topics.errorCycle") };
   }
   if (databaseCode(error) === "23503" || message.includes("same user")) {
-    return { ok: false, error: "That parent topic is no longer available." };
+    return { ok: false, error: t("topics.errorParentUnavailable") };
   }
-  return { ok: false, error: "The topic could not be saved. Please try again." };
+  return { ok: false, error: t("topics.errorSave") };
 }
 
 export async function createVocabularyItem(
@@ -214,17 +225,18 @@ export async function createVocabularyItem(
   formData: FormData,
 ): Promise<LanguageContentActionResult> {
   try {
-    const input = readVocabulary(formData);
+    const { t } = await getI18n();
+    const input = readVocabulary(formData, t);
     if (!input.ok) return input;
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const topicIds = readTopicIds(formData);
     if (!(await topicIdsAreValid(supabase, userId, profileId, topicIds))) {
-      return { ok: false, error: "One or more selected topics are unavailable." };
+      return { ok: false, error: t("vocabulary.errorTopicsUnavailable") };
     }
 
     const { data, error } = await supabase
@@ -273,20 +285,21 @@ export async function updateVocabularyItem(
   formData: FormData,
 ): Promise<LanguageContentActionResult> {
   try {
-    const input = readVocabulary(formData);
+    const { t } = await getI18n();
+    const input = readVocabulary(formData, t);
     if (!input.ok) return input;
     if (!UUID_PATTERN.test(vocabularyItemId)) {
-      return { ok: false, error: "This vocabulary item is unavailable." };
+      return { ok: false, error: t("vocabulary.errorUnavailable") };
     }
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const topicIds = readTopicIds(formData);
     if (!(await topicIdsAreValid(supabase, userId, profileId, topicIds))) {
-      return { ok: false, error: "One or more selected topics are unavailable." };
+      return { ok: false, error: t("vocabulary.errorTopicsUnavailable") };
     }
 
     const { data, error } = await supabase
@@ -299,7 +312,9 @@ export async function updateVocabularyItem(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This vocabulary item is unavailable." };
+    if (!data) {
+      return { ok: false, error: t("vocabulary.errorUnavailable") };
+    }
 
     await syncVocabularyTopics(
       supabase,
@@ -321,12 +336,13 @@ export async function archiveVocabularyItem(
   vocabularyItemId: string,
 ): Promise<LanguageContentActionResult> {
   try {
+    const { t } = await getI18n();
     if (!UUID_PATTERN.test(vocabularyItemId)) {
-      return { ok: false, error: "This vocabulary item is unavailable." };
+      return { ok: false, error: t("vocabulary.errorUnavailable") };
     }
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const { data, error } = await supabase
@@ -339,7 +355,9 @@ export async function archiveVocabularyItem(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This vocabulary item is unavailable." };
+    if (!data) {
+      return { ok: false, error: t("vocabulary.errorUnavailable") };
+    }
 
     revalidateLanguageContent(profileId);
     return { ok: true, id: vocabularyItemId };
@@ -348,18 +366,20 @@ export async function archiveVocabularyItem(
   }
 }
 
-function readTopic(formData: FormData) {
+function readTopic(formData: FormData, t: Translate) {
   const name = String(formData.get("name") ?? "").trim();
   const description = optionalText(formData, "description", 4000);
   const parentRaw = String(formData.get("parent_id") ?? "").trim();
   const parentId = parentRaw && UUID_PATTERN.test(parentRaw) ? parentRaw : null;
 
-  if (!name) return { ok: false as const, error: "Topic name is required." };
+  if (!name) {
+    return { ok: false as const, error: t("topics.errorNameRequired") };
+  }
   if (name.length > 200) {
-    return { ok: false as const, error: "Topic name is too long." };
+    return { ok: false as const, error: t("topics.errorNameLong") };
   }
   if (parentRaw && !parentId) {
-    return { ok: false as const, error: "Choose a valid parent topic." };
+    return { ok: false as const, error: t("topics.errorParentValid") };
   }
   return { ok: true as const, data: { name, description, parentId } };
 }
@@ -407,15 +427,16 @@ export async function createLanguageTopic(
   formData: FormData,
 ): Promise<LanguageContentActionResult> {
   try {
-    const input = readTopic(formData);
+    const { t } = await getI18n();
+    const input = readTopic(formData, t);
     if (!input.ok) return input;
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
     if (!(await parentIsValid(supabase, userId, profileId, input.data.parentId))) {
-      return { ok: false, error: "That parent topic is no longer available." };
+      return { ok: false, error: t("topics.errorParentUnavailable") };
     }
 
     const position = await nextTopicPosition(
@@ -451,21 +472,22 @@ export async function updateLanguageTopic(
   formData: FormData,
 ): Promise<LanguageContentActionResult> {
   try {
-    const input = readTopic(formData);
+    const { t } = await getI18n();
+    const input = readTopic(formData, t);
     if (!input.ok) return input;
     if (!UUID_PATTERN.test(topicId)) {
-      return { ok: false, error: "This topic is unavailable." };
+      return { ok: false, error: t("topics.itemUnavailable") };
     }
     if (input.data.parentId === topicId) {
-      return { ok: false, error: "A topic cannot be its own parent." };
+      return { ok: false, error: t("topics.errorSelfParent") };
     }
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
     if (!(await parentIsValid(supabase, userId, profileId, input.data.parentId))) {
-      return { ok: false, error: "That parent topic is no longer available." };
+      return { ok: false, error: t("topics.errorParentUnavailable") };
     }
 
     const { data: current, error: currentError } = await supabase
@@ -476,7 +498,7 @@ export async function updateLanguageTopic(
       .eq("language_profile_id", profileId)
       .maybeSingle();
     if (currentError) throw currentError;
-    if (!current) return { ok: false, error: "This topic is unavailable." };
+    if (!current) return { ok: false, error: t("topics.itemUnavailable") };
 
     const parentChanged = current.parent_id !== input.data.parentId;
     const position = parentChanged
@@ -502,7 +524,7 @@ export async function updateLanguageTopic(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This topic is unavailable." };
+    if (!data) return { ok: false, error: t("topics.itemUnavailable") };
 
     revalidateLanguageContent(profileId, topicId);
     return { ok: true, id: topicId };
@@ -516,12 +538,13 @@ export async function deleteLanguageTopic(
   topicId: string,
 ): Promise<LanguageContentActionResult> {
   try {
+    const { t } = await getI18n();
     if (!UUID_PATTERN.test(topicId)) {
-      return { ok: false, error: "This topic is unavailable." };
+      return { ok: false, error: t("topics.itemUnavailable") };
     }
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const { data, error } = await supabase
@@ -533,7 +556,7 @@ export async function deleteLanguageTopic(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This topic is unavailable." };
+    if (!data) return { ok: false, error: t("topics.itemUnavailable") };
 
     revalidateLanguageContent(profileId, topicId);
     return { ok: true, id: topicId };

@@ -13,6 +13,7 @@ import { useNotesStore } from "./NotesStore";
 import { RenameDialog } from "./RenameDialog";
 import { MoveItemDialog } from "./MoveItemDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export type FolderTarget = {
   kind: "folder";
@@ -45,6 +46,7 @@ export function NotesActionsProvider({
 }) {
   const router = useRouter();
   const store = useNotesStore();
+  const { t } = useI18n();
 
   const [renameTarget, setRenameTarget] = useState<Target | null>(null);
   const [moveTarget, setMoveTarget] = useState<Target | null>(null);
@@ -95,14 +97,14 @@ export function NotesActionsProvider({
         store.notes,
         deleteTarget.id,
       );
-      deleteTitle = `Delete "${deleteTarget.name}"?`;
+      deleteTitle = t("notes.deleteTitle", { name: deleteTarget.name });
       deleteMessage =
         fc + nc === 0
-          ? "This folder is empty. This action cannot be undone."
-          : `This folder contains ${fc} ${fc === 1 ? "folder" : "folders"} and ${nc} ${nc === 1 ? "note" : "notes"}. Everything inside will be permanently deleted. This action cannot be undone.`;
+          ? t("notes.deleteEmptyFolder")
+          : t("notes.deleteFolderContents", { folders: fc, notes: nc });
     } else {
-      deleteTitle = `Delete "${deleteTarget.name}"?`;
-      deleteMessage = "This note will be permanently deleted. This action cannot be undone.";
+      deleteTitle = t("notes.deleteTitle", { name: deleteTarget.name });
+      deleteMessage = t("notes.deleteNoteMessage");
     }
   }
 
@@ -114,7 +116,9 @@ export function NotesActionsProvider({
         open={renameTarget !== null}
         initialValue={renameTarget?.name ?? ""}
         label={
-          renameTarget?.kind === "folder" ? "Rename folder" : "Rename note"
+          renameTarget?.kind === "folder"
+            ? t("notes.renameFolder")
+            : t("notes.renameNote")
         }
         onClose={() => setRenameTarget(null)}
         onSubmit={(value) => {
@@ -128,7 +132,7 @@ export function NotesActionsProvider({
       <RenameDialog
         open={createFolderParent !== undefined}
         initialValue="New folder"
-        label="New folder"
+        label={t("notes.newFolder")}
         onClose={() => setCreateFolderParent(undefined)}
         onSubmit={(value) => {
           store.createFolder(value, createFolderParent ?? null);

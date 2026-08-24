@@ -15,20 +15,25 @@ import type {
   LanguageTopic,
   NoteLanguageAssociation,
 } from "@/lib/languages/types";
+import { getI18n } from "@/lib/i18n/server";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
-function NoteUnavailable() {
+async function NoteUnavailable() {
+  const { t } = await getI18n();
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8">
       <p className="text-sm tracking-[0.2em] text-muted">404</p>
-      <h1 className="mt-3 text-2xl font-light">This note is unavailable.</h1>
+      <h1 className="mt-3 text-2xl font-light">
+        {t("notes.unavailableTitle")}
+      </h1>
       <p className="mt-2 text-sm text-muted">
-        It may have been deleted or does not belong to you.
+        {t("notes.unavailableDescription")}
       </p>
       <Link
         href="/notes"
         className="mt-6 inline-block text-sm text-muted transition-colors hover:text-foreground"
       >
-        ← Back to Notes
+        {t("notes.back")}
       </Link>
     </div>
   );
@@ -40,6 +45,7 @@ export default async function NotePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const { locale } = await getI18n();
   const supabase = await createClient();
   const {
     data: { user },
@@ -120,7 +126,10 @@ export default async function NotePage({
           {
             link_id: link.id,
             language_profile_id: profile.id,
-            language_name: profile.language_name,
+            language_name: getLanguageDisplayName(
+              profile.language_code,
+              locale,
+            ),
             profile_archived_at: profile.archived_at,
             topic_ids: topicIdsByLink.get(link.id) ?? [],
           },

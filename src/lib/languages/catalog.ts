@@ -1,3 +1,5 @@
+import { localeTag, type Locale } from "@/lib/i18n/locale";
+
 export type LanguageOption = {
   code: string;
   name: string;
@@ -28,4 +30,16 @@ export const LANGUAGE_OPTIONS: readonly LanguageOption[] = [
 export function getLanguageOption(code: string): LanguageOption | null {
   const normalized = code.trim().toLowerCase();
   return LANGUAGE_OPTIONS.find((language) => language.code === normalized) ?? null;
+}
+
+export function getLanguageDisplayName(code: string, locale: Locale) {
+  const fallback = getLanguageOption(code)?.name ?? code;
+  try {
+    return (
+      new Intl.DisplayNames([localeTag(locale)], { type: "language" }).of(code) ??
+      fallback
+    );
+  } catch {
+    return fallback;
+  }
 }

@@ -10,6 +10,7 @@ import { Dialog } from "@/components/notes/Dialog";
 import { useToast } from "@/components/notes/Toast";
 import { topicPathLabels } from "@/lib/languages/topics";
 import type { LanguageTopic } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function LanguageNoteTopicsDialog({
   open,
@@ -34,6 +35,7 @@ export function LanguageNoteTopicsDialog({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useI18n();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [selected, setSelected] = useState(new Set(selectedTopicIds));
@@ -61,7 +63,11 @@ export function LanguageNoteTopicsDialog({
         setError(result.error);
         return;
       }
-      toast.success(linkId ? "Language Topics updated." : `Note linked to ${profileName}.`);
+      toast.success(
+        linkId
+          ? t("languageNotes.topicsUpdated")
+          : t("languageNotes.linkedToast", { language: profileName }),
+      );
       onSaved?.(result.data.id, topicIds);
       onClose();
       router.refresh();
@@ -72,17 +78,19 @@ export function LanguageNoteTopicsDialog({
     <Dialog
       open={open}
       onClose={close}
-      title={linkId ? `${profileName} Topics` : `Link to ${profileName}`}
+      title={t(linkId ? "languageNotes.topicsTitle" : "languageNotes.linkTitle", {
+        language: profileName,
+      })}
       description={
         topics.length > 0
-          ? "Topic assignments belong only to this language relationship."
-          : "This language has no Topics yet. The Note can still be linked."
+          ? t("languageNotes.topicsDescription")
+          : t("languageNotes.noTopicsDescription")
       }
     >
       {topics.length > 0 && (
         <fieldset>
           <legend className="text-xs tracking-[0.16em] text-muted">
-            LANGUAGE TOPICS <span className="tracking-normal">· optional</span>
+            {t("languageNotes.topicsOptional")}
           </legend>
           <div className="mt-3 max-h-56 space-y-1 overflow-y-auto">
             {topics.map((topic) => (
@@ -123,7 +131,7 @@ export function LanguageNoteTopicsDialog({
           disabled={pending}
           className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="button"
@@ -131,7 +139,11 @@ export function LanguageNoteTopicsDialog({
           disabled={pending}
           className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {pending ? "Saving…" : linkId ? "Save Topics" : "Link Note"}
+          {pending
+            ? t("common.saving")
+            : linkId
+              ? t("languageNotes.saveTopics")
+              : t("languageNotes.link")}
         </button>
       </div>
     </Dialog>

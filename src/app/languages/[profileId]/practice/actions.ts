@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { loadActiveVocabularyIds } from "@/lib/languages/srs/practice-server";
 import {
@@ -82,16 +83,17 @@ export async function startPracticeSession(
   topicId: string | null,
 ): Promise<StartPracticeResult> {
   try {
+    const { t } = await getI18n();
     if (!isPracticeMode(mode) || !isPracticeSize(size)) {
-      return { ok: false, error: "Invalid practice options." };
+      return { ok: false, error: t("practice.errorInvalidOptions") };
     }
     if (topicId && !UUID_PATTERN.test(topicId)) {
-      return { ok: false, error: "Invalid topic." };
+      return { ok: false, error: t("practice.errorInvalidTopic") };
     }
 
     const { supabase, userId } = await requireUser();
     if (!(await hasActiveProfile(supabase, userId, profileId))) {
-      return { ok: false, error: "This language profile is unavailable." };
+      return { ok: false, error: t("languages.profileUnavailable") };
     }
 
     const ids = await loadActiveVocabularyIds(supabase, userId, profileId, topicId);
@@ -100,8 +102,8 @@ export async function startPracticeSession(
       return {
         ok: false,
         error: topicId
-          ? "This topic has no active vocabulary to practise."
-          : "There is no active vocabulary to practise yet.",
+          ? t("practice.errorEmptyTopic")
+          : t("practice.errorEmpty"),
       };
     }
 
@@ -129,7 +131,8 @@ export async function startPracticeSession(
     return { ok: true, sessionId: data.id };
   } catch (error) {
     console.error("Could not start practice session:", error);
-    return { ok: false, error: "The practice session could not be started." };
+    const { t } = await getI18n();
+    return { ok: false, error: t("practice.errorStart") };
   }
 }
 
@@ -187,18 +190,31 @@ export async function recordPracticeAttempt(
   responseTimeMs: number | null,
 ): Promise<RecordPracticeResult> {
   try {
+    const { t } = await getI18n();
     if (
       !UUID_PATTERN.test(profileId) ||
       !UUID_PATTERN.test(sessionId) ||
       !UUID_PATTERN.test(vocabularyItemId)
     ) {
-      return { ok: false, code: "error", message: "Invalid practice request." };
+      return {
+        ok: false,
+        code: "error",
+        message: t("practice.errorInvalidRequest"),
+      };
     }
     if (![1, 2, 3, 4].includes(rating)) {
-      return { ok: false, code: "error", message: "Invalid rating." };
+      return {
+        ok: false,
+        code: "error",
+        message: t("practice.errorInvalidRating"),
+      };
     }
     if (direction !== "recall" && direction !== "reverse") {
-      return { ok: false, code: "error", message: "Invalid practice direction." };
+      return {
+        ok: false,
+        code: "error",
+        message: t("practice.errorInvalidDirection"),
+      };
     }
 
     const { supabase, userId } = await requireUser();
@@ -233,7 +249,7 @@ export async function recordPracticeAttempt(
       return {
         ok: false,
         code: "unavailable",
-        message: "This card is no longer available.",
+        message: t("practice.errorUnavailable"),
       };
     }
     if (attempt.status === "stale") {
@@ -242,10 +258,11 @@ export async function recordPracticeAttempt(
     throw attempt.error;
   } catch (error) {
     console.error("Could not record practice attempt:", error);
+    const { t } = await getI18n();
     return {
       ok: false,
       code: "error",
-      message: "This answer could not be saved. Please try again.",
+      message: t("practice.errorSave"),
     };
   }
 }

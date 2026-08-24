@@ -13,6 +13,7 @@ import type {
   LanguageNoteCandidate,
   LanguageTopic,
 } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function LinkExistingNoteDialog({
   open,
@@ -31,6 +32,7 @@ export function LinkExistingNoteDialog({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { formatDate, t } = useI18n();
   const [pending, startTransition] = useTransition();
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState(initialCandidates);
@@ -66,7 +68,7 @@ export function LinkExistingNoteDialog({
 
   function link() {
     if (!selectedNoteId) {
-      setError("Choose a Note to link.");
+      setError(t("languageNotes.chooseNote"));
       return;
     }
     setError("");
@@ -80,7 +82,7 @@ export function LinkExistingNoteDialog({
         setError(result.error);
         return;
       }
-      toast.success(`Note linked to ${profileName}.`);
+      toast.success(t("languageNotes.linkedToast", { language: profileName }));
       setCandidates((current) =>
         current.filter((note) => note.id !== selectedNoteId),
       );
@@ -95,18 +97,20 @@ export function LinkExistingNoteDialog({
     <Dialog
       open={open}
       onClose={resetAndClose}
-      title="Link existing Note"
-      description={`Choose one of your existing Luce Notes for ${profileName}. No Note content will be copied.`}
+      title={t("languageNotes.dialogTitle")}
+      description={t("languageNotes.dialogDescription", {
+        language: profileName,
+      })}
       panelClassName="max-h-[calc(100vh-2rem)] max-w-2xl overflow-y-auto"
     >
       <form onSubmit={search} className="flex gap-2">
         <label className="min-w-0 flex-1">
-          <span className="sr-only">Search existing Notes</span>
+          <span className="sr-only">{t("languageNotes.searchExisting")}</span>
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search Notes by title…"
+            placeholder={t("languageNotes.searchExistingPlaceholder")}
             maxLength={160}
             className="w-full rounded-xl border border-border bg-surface-2 px-4 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-accent"
           />
@@ -116,15 +120,17 @@ export function LinkExistingNoteDialog({
           disabled={pending}
           className="rounded-full border border-border-strong px-4 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
         >
-          Search
+          {t("common.search")}
         </button>
       </form>
 
       <fieldset className="mt-5">
-        <legend className="text-xs tracking-[0.16em] text-muted">NOTES</legend>
+        <legend className="text-xs tracking-[0.16em] text-muted">
+          {t("languageNotes.notesLabel")}
+        </legend>
         {candidates.length === 0 ? (
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            No unlinked Notes match this search.
+            {t("languageNotes.noCandidates")}
           </p>
         ) : (
           <div className="mt-2 max-h-48 divide-y divide-border overflow-y-auto rounded-xl border border-border">
@@ -142,10 +148,10 @@ export function LinkExistingNoteDialog({
                   className="size-4 accent-[var(--accent)]"
                 />
                 <span className="min-w-0 flex-1 truncate text-foreground">
-                  {note.title || "Untitled"}
+                  {note.title || t("notes.untitled")}
                 </span>
                 <time className="shrink-0 text-xs text-muted">
-                  {new Date(note.updated_at).toLocaleDateString("en-GB", {
+                  {formatDate(note.updated_at, {
                     day: "numeric",
                     month: "short",
                     timeZone: "UTC",
@@ -160,7 +166,7 @@ export function LinkExistingNoteDialog({
       {topics.length > 0 && (
         <fieldset className="mt-5">
           <legend className="text-xs tracking-[0.16em] text-muted">
-            LANGUAGE TOPICS <span className="tracking-normal">· optional</span>
+            {t("languageNotes.topicsOptional")}
           </legend>
           <div className="mt-2 grid max-h-40 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
             {topics.map((topic) => (
@@ -201,7 +207,7 @@ export function LinkExistingNoteDialog({
           disabled={pending}
           className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="button"
@@ -209,7 +215,7 @@ export function LinkExistingNoteDialog({
           disabled={pending || !selectedNoteId}
           className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          {pending ? "Linking…" : "Link Note"}
+          {pending ? t("common.saving") : t("languageNotes.link")}
         </button>
       </div>
     </Dialog>

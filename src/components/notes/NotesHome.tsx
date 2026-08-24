@@ -8,9 +8,11 @@ import { useNotesStore } from "./NotesStore";
 import { useNotesActions } from "./NotesActions";
 import { NotesBreadcrumbs } from "./NotesBreadcrumbs";
 import { DocIcon, FolderIcon, PlusIcon, StarIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 function CreateButtons({ folderId }: { folderId: string | null }) {
   const actions = useNotesActions();
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-2">
       <button
@@ -18,14 +20,14 @@ function CreateButtons({ folderId }: { folderId: string | null }) {
         className="flex items-center gap-2 rounded-full border border-border-strong px-4 py-1.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
       >
         <PlusIcon />
-        New note
+        {t("notes.newNote")}
       </button>
       <button
         onClick={() => actions.createFolderIn(folderId)}
         className="flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm text-muted-strong transition-colors hover:border-accent hover:text-foreground"
       >
         <FolderIcon />
-        New folder
+        {t("notes.newFolder")}
       </button>
     </div>
   );
@@ -40,6 +42,7 @@ function NoteCard({
   title: string;
   pinned?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <Link
       href={`/notes/${id}`}
@@ -47,7 +50,7 @@ function NoteCard({
     >
       <DocIcon className="shrink-0 text-muted" />
       <span className="truncate text-sm text-muted-strong transition-colors group-hover:text-foreground">
-        {title || "Untitled"}
+        {title || t("notes.untitled")}
       </span>
       {pinned && <StarIcon filled size={11} className="ml-auto text-accent/70" />}
     </Link>
@@ -57,6 +60,7 @@ function NoteCard({
 /** Contents view for a single folder (reached via a breadcrumb / folder link). */
 function FolderView({ folderId }: { folderId: string }) {
   const store = useNotesStore();
+  const { t } = useI18n();
   const tree = useMemo(
     () => buildTree(store.folders, store.notes),
     [store.folders, store.notes],
@@ -79,12 +83,12 @@ function FolderView({ folderId }: { folderId: string }) {
   if (!node) {
     return (
       <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
-        <p className="text-sm text-muted">This folder no longer exists.</p>
+        <p className="text-sm text-muted">{t("notes.folderMissing")}</p>
         <Link
           href="/notes"
           className="mt-3 inline-block text-sm text-muted transition-colors hover:text-foreground"
         >
-          ← Back to Notes
+          {t("notes.back")}
         </Link>
       </div>
     );
@@ -101,7 +105,7 @@ function FolderView({ folderId }: { folderId: string }) {
       </div>
 
       {isEmpty ? (
-        <p className="mt-10 text-sm text-muted">This folder is empty.</p>
+        <p className="mt-10 text-sm text-muted">{t("notes.folderEmpty")}</p>
       ) : (
         <div className="mt-8 flex flex-col gap-6">
           {node.folders.length > 0 && (
@@ -140,6 +144,7 @@ function FolderView({ folderId }: { folderId: string }) {
 
 export function NotesHome() {
   const store = useNotesStore();
+  const { t } = useI18n();
   const params = useSearchParams();
   const folderId = params.get("folder");
 
@@ -161,17 +166,21 @@ export function NotesHome() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
-      <p className="text-sm tracking-[0.3em] text-muted">CONOSCENZA</p>
+      <p className="text-sm tracking-[0.3em] text-muted">
+        {t("notes.knowledge")}
+      </p>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-4xl font-light tracking-tight">Notes</h1>
+        <h1 className="text-4xl font-light tracking-tight">
+          {t("notes.title")}
+        </h1>
         <CreateButtons folderId={null} />
       </div>
 
       {totallyEmpty ? (
         <div className="mt-14 text-sm leading-relaxed text-muted">
-          No notes yet.
+          {t("notes.empty")}
           <br />
-          Create your first note or folder to get started.
+          {t("notes.emptyHint")}
         </div>
       ) : (
         <div className="mt-10 flex flex-col gap-10">
@@ -179,7 +188,7 @@ export function NotesHome() {
             <section>
               <div className="mb-3 flex items-center gap-1.5 text-[0.7rem] tracking-[0.25em] text-muted">
                 <StarIcon filled size={11} className="text-accent/70" />
-                PINNED
+                {t("notes.pinned")}
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {pinned.map((n) => (
@@ -192,7 +201,7 @@ export function NotesHome() {
           {recent.length > 0 && (
             <section>
               <div className="mb-3 text-[0.7rem] tracking-[0.25em] text-muted">
-                RECENT
+                {t("notes.recent")}
               </div>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {recent.map((n) => (

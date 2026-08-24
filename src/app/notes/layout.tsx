@@ -7,21 +7,22 @@ import { MenuOverlay } from "@/components/MenuOverlay";
 import { SetupNotice } from "@/components/SetupNotice";
 import { NotesShell } from "@/components/notes/NotesShell";
 import type { NoteFolder, NoteSummary } from "@/lib/notes/types";
-
-const MENU_ITEMS = [
-  { label: "Panoramica", href: "/dashboard" },
-  { label: "Calendario", href: "/dashboard#calendar" },
-  { label: "To-do", href: "/dashboard#todos" },
-  { label: "Note", href: "/notes" },
-  { label: "Languages", href: "/languages" },
-];
+import { getI18n } from "@/lib/i18n/server";
 
 export default async function NotesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = await getI18n();
   if (!isSupabaseConfigured()) return <SetupNotice />;
+  const menuItems = [
+    { label: t("menu.overview"), href: "/dashboard" },
+    { label: t("menu.calendar"), href: "/dashboard#calendar" },
+    { label: t("menu.todos"), href: "/dashboard#todos" },
+    { label: t("menu.notes"), href: "/notes" },
+    { label: t("menu.languages"), href: "/languages" },
+  ];
 
   const supabase = await createClient();
   const {
@@ -45,7 +46,7 @@ export default async function NotesLayout({
     <div className="flex h-[100dvh] flex-col">
       <header className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4 sm:px-10">
         <div className="flex items-center gap-6">
-          <MenuOverlay items={MENU_ITEMS} />
+          <MenuOverlay items={menuItems} />
           <Logo href="/dashboard" />
         </div>
         <div className="flex items-center gap-5 text-sm text-muted">
@@ -55,7 +56,7 @@ export default async function NotesLayout({
               type="submit"
               className="transition-colors hover:text-foreground"
             >
-              Wyloguj
+              {t("menu.signOut")}
             </button>
           </form>
         </div>

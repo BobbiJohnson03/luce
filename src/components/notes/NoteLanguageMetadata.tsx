@@ -11,6 +11,8 @@ import type {
   LanguageTopic,
   NoteLanguageAssociation,
 } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
 type TopicTarget = {
   profile: LanguageProfile;
@@ -30,6 +32,7 @@ export function NoteLanguageMetadata({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { locale, t } = useI18n();
   const [managing, setManaging] = useState(false);
   const [topicTarget, setTopicTarget] = useState<TopicTarget | null>(null);
   const [unlinkTarget, setUnlinkTarget] =
@@ -57,9 +60,7 @@ export function NoteLanguageMetadata({
         toast.error(result.error);
         return;
       }
-      toast.success(
-        `Unlinked from ${unlinkTarget.language_name}. The Note was kept.`,
-      );
+      toast.success(t("notes.unlinkedToast", { language: unlinkTarget.language_name }));
       setUnlinkTarget(null);
       router.refresh();
     });
@@ -68,7 +69,7 @@ export function NoteLanguageMetadata({
   return (
     <>
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-        <span className="tracking-[0.14em]">LANGUAGES</span>
+        <span className="tracking-[0.14em]">{t("notes.languagesLabel")}</span>
         {associations.map((association) => {
           const topicNames = topics
             .filter(
@@ -92,20 +93,22 @@ export function NoteLanguageMetadata({
           onClick={() => setManaging(true)}
           className="rounded-full px-2.5 py-1 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
         >
-          {associations.length > 0 ? "Manage" : "+ Link language"}
+          {associations.length > 0
+            ? t("notes.manageLanguages")
+            : t("notes.linkLanguage")}
         </button>
       </div>
 
       <Dialog
         open={managing}
         onClose={() => setManaging(false)}
-        title="Note languages"
-        description="Each language link has its own optional Topic assignments. The Note itself remains shared."
+        title={t("notes.languagesTitle")}
+        description={t("notes.languagesDescription")}
         panelClassName="max-w-xl"
       >
         {profiles.length === 0 ? (
           <p className="text-sm leading-relaxed text-muted">
-            Create a Language Profile before linking this Note.
+            {t("notes.createProfileFirst")}
           </p>
         ) : (
           <div className="divide-y divide-border rounded-xl border border-border">
@@ -120,14 +123,19 @@ export function NoteLanguageMetadata({
                 >
                   <div className="min-w-0">
                     <p className="text-sm text-foreground">
-                      {profile.language_name}
+                      {getLanguageDisplayName(profile.language_code, locale)}
                     </p>
                     <p className="mt-1 text-xs text-muted">
                       {association
                         ? association.profile_archived_at
-                          ? "Linked · archived profile"
-                          : `${association.topic_ids.length} ${association.topic_ids.length === 1 ? "Topic" : "Topics"}`
-                        : "Not linked"}
+                          ? t("notes.linkedArchived")
+                          : t(
+                              association.topic_ids.length === 1
+                                ? "notes.topicCountOne"
+                                : "notes.topicCountOther",
+                              { count: association.topic_ids.length },
+                            )
+                        : t("notes.notLinked")}
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-2">
@@ -141,7 +149,7 @@ export function NoteLanguageMetadata({
                             }
                             className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-strong transition-colors hover:border-accent hover:text-foreground"
                           >
-                            Edit Topics
+                            {t("notes.editTopics")}
                           </button>
                         )}
                         <button
@@ -149,7 +157,7 @@ export function NoteLanguageMetadata({
                           onClick={() => requestUnlink(association)}
                           className="rounded-full px-3 py-1.5 text-xs text-danger transition-colors hover:bg-danger/10"
                         >
-                          Unlink
+                          {t("notes.unlink")}
                         </button>
                       </>
                     ) : (
@@ -159,7 +167,7 @@ export function NoteLanguageMetadata({
                           onClick={() => requestTopics({ profile })}
                           className="rounded-full border border-border-strong px-4 py-1.5 text-xs text-foreground transition-colors hover:border-accent hover:text-accent"
                         >
-                          Link
+                          {t("notes.link")}
                         </button>
                       )
                     )}
@@ -176,7 +184,10 @@ export function NoteLanguageMetadata({
           open
           onClose={() => setTopicTarget(null)}
           profileId={topicTarget.profile.id}
-          profileName={topicTarget.profile.language_name}
+          profileName={getLanguageDisplayName(
+            topicTarget.profile.language_code,
+            locale,
+          )}
           noteId={noteId}
           linkId={topicTarget.association?.link_id}
           topics={topics.filter(
@@ -191,8 +202,10 @@ export function NoteLanguageMetadata({
         onClose={() => {
           if (!pending) setUnlinkTarget(null);
         }}
-        title={`Unlink from ${unlinkTarget?.language_name ?? "language"}?`}
-        description="Only this language relationship and its Topic assignments will be removed. The Note, its content, folder, and other language links will remain unchanged."
+        title={t("notes.unlinkTitle", {
+          language: unlinkTarget?.language_name ?? "",
+        })}
+        description={t("notes.unlinkDescription")}
       >
         <div className="flex justify-end gap-2">
           <button
@@ -201,7 +214,7 @@ export function NoteLanguageMetadata({
             disabled={pending}
             className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Keep linked
+            {t("notes.keepLinked")}
           </button>
           <button
             type="button"
@@ -209,7 +222,7 @@ export function NoteLanguageMetadata({
             disabled={pending}
             className="rounded-full border border-danger/40 px-4 py-2 text-sm text-danger transition-colors hover:border-danger hover:bg-danger/10 disabled:opacity-50"
           >
-            {pending ? "Unlinking…" : "Unlink"}
+            {pending ? t("notes.unlinking") : t("notes.unlink")}
           </button>
         </div>
       </Dialog>

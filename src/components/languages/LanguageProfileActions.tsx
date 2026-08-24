@@ -8,10 +8,14 @@ import { DropdownMenu } from "@/components/notes/DropdownMenu";
 import { useToast } from "@/components/notes/Toast";
 import type { LanguageProfile } from "@/lib/languages/types";
 import { LanguageProfileDialog } from "./LanguageProfileDialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
 export function LanguageProfileActions({ profile }: { profile: LanguageProfile }) {
   const router = useRouter();
   const toast = useToast();
+  const { locale, t } = useI18n();
+  const languageName = getLanguageDisplayName(profile.language_code, locale);
   const [editing, setEditing] = useState(false);
   const [confirmingArchive, setConfirmingArchive] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -23,7 +27,7 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
         toast.error(result.error);
         return;
       }
-      toast.success(`${profile.language_name} was archived.`);
+      toast.success(t("languages.archivedToast", { language: languageName }));
       setConfirmingArchive(false);
       router.push("/languages");
       router.refresh();
@@ -33,11 +37,11 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
   return (
     <>
       <DropdownMenu
-        label="Profile settings"
+        label={t("languages.profileSettings")}
         items={[
-          { label: "Edit profile", onSelect: () => setEditing(true) },
+          { label: t("languages.editProfile"), onSelect: () => setEditing(true) },
           {
-            label: "Archive profile",
+            label: t("languages.archiveProfile"),
             danger: true,
             onSelect: () => setConfirmingArchive(true),
           },
@@ -51,7 +55,7 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
             aria-expanded={open}
             className="rounded-full border border-border-strong px-4 py-1.5 text-sm text-muted-strong transition-colors hover:border-accent hover:text-foreground"
           >
-            Profile settings
+            {t("languages.profileSettings")}
           </button>
         )}
       />
@@ -67,8 +71,8 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
         onClose={() => {
           if (!pending) setConfirmingArchive(false);
         }}
-        title={`Archive ${profile.language_name}?`}
-        description="It will leave your active Languages Hub, but its profile and future learning history will remain safe. You can start this language again later."
+        title={t("languages.archiveTitle", { language: languageName })}
+        description={t("languages.archiveDescription")}
       >
         <div className="flex justify-end gap-2">
           <button
@@ -77,7 +81,7 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
             disabled={pending}
             className="rounded-full px-4 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Keep profile
+            {t("languages.keepProfile")}
           </button>
           <button
             type="button"
@@ -85,7 +89,9 @@ export function LanguageProfileActions({ profile }: { profile: LanguageProfile }
             disabled={pending}
             className="rounded-full border border-danger/40 px-4 py-1.5 text-sm text-danger transition-colors hover:border-danger hover:bg-danger/10 disabled:opacity-50"
           >
-            {pending ? "Archiving…" : "Archive profile"}
+            {pending
+              ? t("languages.archiving")
+              : t("languages.archiveProfile")}
           </button>
         </div>
       </Dialog>

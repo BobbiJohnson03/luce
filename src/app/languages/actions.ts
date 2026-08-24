@@ -2,8 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getLanguageOption } from "@/lib/languages/catalog";
+import {
+  getLanguageDisplayName,
+  getLanguageOption,
+} from "@/lib/languages/catalog";
 import { CEFR_LEVELS, type CefrLevel } from "@/lib/languages/types";
+import { getI18n } from "@/lib/i18n/server";
+
+type Translator = Awaited<ReturnType<typeof getI18n>>["t"];
 
 export type LanguageProfileActionResult =
   | { ok: true; profileId: string }
@@ -36,29 +42,30 @@ function readCefr(value: FormDataEntryValue | null): CefrLevel | null | false {
 
 function readSettings(
   formData: FormData,
+  t: Translator,
 ): { ok: true; data: ProfileSettings } | { ok: false; error: string } {
   const translationLanguage = getLanguageOption(
     String(formData.get("translation_language_code") ?? ""),
   );
   if (!translationLanguage) {
-    return { ok: false, error: "Choose a primary translation language." };
+    return { ok: false, error: t("languages.errorChooseTranslation") };
   }
 
   const currentCefr = readCefr(formData.get("current_cefr"));
   const targetCefr = readCefr(formData.get("target_cefr"));
   if (currentCefr === false || targetCefr === false) {
-    return { ok: false, error: "Choose a valid CEFR level." };
+    return { ok: false, error: t("languages.errorCefr") };
   }
 
   const dailyGoalRaw = String(formData.get("daily_goal_minutes") ?? "").trim();
   let dailyGoal: number | null = null;
   if (dailyGoalRaw) {
     if (!/^\d+$/.test(dailyGoalRaw)) {
-      return { ok: false, error: "Daily goal must be a whole number of minutes." };
+      return { ok: false, error: t("languages.errorGoalWhole") };
     }
     dailyGoal = Number(dailyGoalRaw);
     if (dailyGoal < 1 || dailyGoal > 1440) {
-      return { ok: false, error: "Daily goal must be between 1 and 1440 minutes." };
+      return { ok: false, error: t("languages.errorGoalRange") };
     }
   }
 
@@ -74,21 +81,23 @@ function readSettings(
   };
 }
 
-function failed(error: unknown): LanguageProfileActionResult {
+async function failed(error: unknown): Promise<LanguageProfileActionResult> {
   console.error("Language profile mutation failed:", error);
-  return { ok: false, error: "The profile could not be saved. Please try again." };
+  const { t } = await getI18n();
+  return { ok: false, error: t("languages.errorSave") };
 }
 
 export async function createLanguageProfile(
   formData: FormData,
 ): Promise<LanguageProfileActionResult> {
   try {
+    const { locale, t } = await getI18n();
     const language = getLanguageOption(
       String(formData.get("language_code") ?? ""),
     );
-    if (!language) return { ok: false, error: "Choose a language to learn." };
+    if (!language) return { ok: false, error: t("languages.errorChooseLearning") };
 
-    const settings = readSettings(formData);
+    const settings = readSettings(formData, t);
     if (!settings.ok) return settings;
 
     const { supabase, user } = await requireUser();
@@ -117,7 +126,9 @@ export async function createLanguageProfile(
     if (error?.code === "23505") {
       return {
         ok: false,
-        error: `You already have an active ${language.name} profile.`,
+        error: t("languages.errorDuplicate", {
+          language: getLanguageDisplayName(language.code, locale),
+        }),
       };
     }
     if (error) throw error;
@@ -134,7 +145,8 @@ export async function updateLanguageProfile(
   formData: FormData,
 ): Promise<LanguageProfileActionResult> {
   try {
-    const settings = readSettings(formData);
+    const { t } = await getI18n();
+    const settings = readSettings(formData, t);
     if (!settings.ok) return settings;
 
     const { supabase, user } = await requireUser();
@@ -147,7 +159,7 @@ export async function updateLanguageProfile(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This language profile is unavailable." };
+    if (!data) return { ok: false, error: t("languages.profileUnavailable") };
 
     revalidatePath("/languages");
     revalidatePath(`/languages/${profileId}`);
@@ -161,6 +173,7 @@ export async function archiveLanguageProfile(
   profileId: string,
 ): Promise<LanguageProfileActionResult> {
   try {
+    const { t } = await getI18n();
     const { supabase, user } = await requireUser();
     const { data, error } = await supabase
       .from("language_profiles")
@@ -171,7 +184,7 @@ export async function archiveLanguageProfile(
       .select("id")
       .maybeSingle();
     if (error) throw error;
-    if (!data) return { ok: false, error: "This language profile is unavailable." };
+    if (!data) return { ok: false, error: t("languages.profileUnavailable") };
 
     revalidatePath("/languages");
     revalidatePath(`/languages/${profileId}`);

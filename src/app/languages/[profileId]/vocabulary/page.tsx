@@ -10,6 +10,7 @@ import type {
   VocabularyItem,
   VocabularyItemWithTopics,
 } from "@/lib/languages/types";
+import { getI18n } from "@/lib/i18n/server";
 
 const PAGE_SIZE = 50;
 
@@ -25,6 +26,7 @@ export default async function VocabularyPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { profileId } = await params;
+  const { t } = await getI18n();
   const filters = await searchParams;
   const query = firstParam(filters.q).trim().slice(0, 200);
   const requestedTopicId = firstParam(filters.topic);
@@ -86,9 +88,13 @@ export default async function VocabularyPage({
     console.error("Could not load vocabulary:", error);
     return (
       <div className="py-12">
-        <p className="text-xs tracking-[0.25em] text-muted">VOCABULARY</p>
-        <h2 className="mt-4 text-2xl font-light">Vocabulary is unavailable.</h2>
-        <p className="mt-3 text-sm text-muted">Please refresh and try again.</p>
+        <p className="text-xs tracking-[0.25em] text-muted">
+          {t("vocabulary.label")}
+        </p>
+        <h2 className="mt-4 text-2xl font-light">
+          {t("vocabulary.unavailable")}
+        </h2>
+        <p className="mt-3 text-sm text-muted">{t("common.tryAgain")}</p>
       </div>
     );
   }

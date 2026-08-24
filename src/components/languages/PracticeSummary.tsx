@@ -1,5 +1,8 @@
+"use client";
+
 import type { SessionSummary } from "@/lib/languages/srs/summary";
 import { SessionSummaryView } from "./SessionSummaryView";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * Practice summary. Shows the same real metrics as review plus the practice
@@ -19,15 +22,16 @@ export function PracticeSummary({
   modeLabel: string;
   scopeLabel: string;
 }) {
+  const { t } = useI18n();
   return (
     <SessionSummaryView
-      title="PRACTICE COMPLETE"
+      title={t("practice.complete")}
       summary={summary}
       durationMs={durationMs}
       profileId={profileId}
       meta={[
-        { label: "MODE", value: modeLabel },
-        { label: "SCOPE", value: scopeLabel },
+        { label: t("practice.mode"), value: modeLabel },
+        { label: t("practice.scope"), value: scopeLabel },
       ]}
     />
   );

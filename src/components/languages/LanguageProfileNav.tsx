@@ -2,21 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const TABS = [
-  { label: "Overview", segment: "" },
-  { label: "Vocabulary", segment: "/vocabulary" },
-  { label: "Topics", segment: "/topics" },
-  { label: "Notes", segment: "/notes" },
-  { label: "Practice", segment: "/practice" },
+  { label: "languages.navOverview", segment: "" },
+  { label: "languages.navVocabulary", segment: "/vocabulary" },
+  { label: "languages.navTopics", segment: "/topics" },
+  { label: "languages.navNotes", segment: "/notes" },
+  { label: "languages.navPractice", segment: "/practice" },
 ] as const;
 
 export function LanguageProfileNav({ profileId }: { profileId: string }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const base = `/languages/${profileId}`;
 
   return (
-    <nav aria-label="Language profile" className="flex min-w-0 gap-5 sm:gap-7">
+    <nav
+      aria-label={t("languages.profileAria")}
+      className="flex min-w-0 gap-5 sm:gap-7"
+    >
       {TABS.map((tab) => {
         const href = `${base}${tab.segment}`;
         const active = tab.segment
@@ -35,7 +40,7 @@ export function LanguageProfileNav({ profileId }: { profileId: string }) {
                 : "border-transparent text-muted hover:text-foreground",
             ].join(" ")}
           >
-            {tab.label}
+            {t(tab.label)}
           </Link>
         );
       })}

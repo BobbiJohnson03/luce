@@ -11,6 +11,7 @@ import type {
   LanguageTopic,
 } from "@/lib/languages/types";
 import { LanguageNoteTopicsDialog } from "./LanguageNoteTopicsDialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function LanguageNoteActions({
   profileId,
@@ -25,6 +26,8 @@ export function LanguageNoteActions({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useI18n();
+  const noteTitle = item.note.title || t("notes.untitled");
   const [editingTopics, setEditingTopics] = useState(false);
   const [confirmingUnlink, setConfirmingUnlink] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -36,7 +39,7 @@ export function LanguageNoteActions({
         toast.error(result.error);
         return;
       }
-      toast.success(`Note unlinked from ${profileName}. The Note was kept.`);
+      toast.success(t("languageNotes.unlinkedToast", { language: profileName }));
       setConfirmingUnlink(false);
       router.refresh();
     });
@@ -45,18 +48,18 @@ export function LanguageNoteActions({
   return (
     <>
       <DropdownMenu
-        label={`${item.note.title || "Untitled"} language actions`}
+        label={t("languageNotes.actions", { title: noteTitle })}
         items={[
           {
-            label: "Open Note",
+            label: t("languageNotes.open"),
             onSelect: () => router.push(`/notes/${item.note.id}`),
           },
           {
-            label: "Edit language Topics",
+            label: t("languageNotes.editTopics"),
             onSelect: () => setEditingTopics(true),
           },
           {
-            label: `Unlink from ${profileName}`,
+            label: t("languageNotes.unlinkFrom", { language: profileName }),
             danger: true,
             onSelect: () => setConfirmingUnlink(true),
           },
@@ -68,7 +71,7 @@ export function LanguageNoteActions({
             onClick={toggle}
             aria-haspopup="menu"
             aria-expanded={open}
-            aria-label={`${item.note.title || "Untitled"} actions`}
+            aria-label={t("languageNotes.noteActions", { title: noteTitle })}
             className="rounded-full px-2 py-1 text-lg leading-none text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
           >
             ···
@@ -92,8 +95,8 @@ export function LanguageNoteActions({
         onClose={() => {
           if (!pending) setConfirmingUnlink(false);
         }}
-        title={`Unlink from ${profileName}?`}
-        description="Only this language relationship and its Topic assignments will be removed. The Note, its content, folder, and other language links will remain unchanged."
+        title={t("languageNotes.unlinkTitle", { language: profileName })}
+        description={t("languageNotes.unlinkDescription")}
       >
         <div className="flex justify-end gap-2">
           <button
@@ -102,7 +105,7 @@ export function LanguageNoteActions({
             disabled={pending}
             className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Keep linked
+            {t("languageNotes.keep")}
           </button>
           <button
             type="button"
@@ -110,7 +113,7 @@ export function LanguageNoteActions({
             disabled={pending}
             className="rounded-full border border-danger/40 px-4 py-2 text-sm text-danger transition-colors hover:border-danger hover:bg-danger/10 disabled:opacity-50"
           >
-            {pending ? "Unlinking…" : "Unlink Note"}
+            {pending ? t("languageNotes.unlinking") : t("languageNotes.unlink")}
           </button>
         </div>
       </Dialog>

@@ -8,20 +8,25 @@ import {
   loadSessionAttempts,
 } from "@/lib/languages/srs/review-server";
 import { summarizeAttempts } from "@/lib/languages/srs/summary";
+import { getI18n } from "@/lib/i18n/server";
+import { getLanguageDisplayName } from "@/lib/languages/catalog";
 
-function SessionUnavailable({ profileId }: { profileId: string }) {
+async function SessionUnavailable({ profileId }: { profileId: string }) {
+  const { t } = await getI18n();
   return (
     <div className="mx-auto w-full max-w-lg py-16">
-      <p className="text-xs tracking-[0.3em] text-muted">REVIEW</p>
-      <h2 className="mt-4 text-2xl font-light">This session is unavailable.</h2>
+      <p className="text-xs tracking-[0.3em] text-muted">{t("review.label")}</p>
+      <h2 className="mt-4 text-2xl font-light">
+        {t("review.sessionUnavailable")}
+      </h2>
       <p className="mt-3 text-sm text-muted">
-        It may have ended or may not belong to you.
+        {t("review.sessionUnavailableDescription")}
       </p>
       <Link
         href={`/languages/${profileId}/review`}
         className="mt-6 inline-block text-sm text-muted transition-colors hover:text-foreground"
       >
-        ← Back to review
+        {t("review.back")}
       </Link>
     </div>
   );
@@ -33,6 +38,7 @@ export default async function ReviewSessionPage({
   params: Promise<{ profileId: string; sessionId: string }>;
 }) {
   const { profileId, sessionId } = await params;
+  const { locale } = await getI18n();
   const { supabase, userId, profile } = await loadLanguageProfile(profileId);
   if (!profile) return null;
 
@@ -64,7 +70,7 @@ export default async function ReviewSessionPage({
     <ReviewSessionClient
       profileId={profileId}
       sessionId={sessionId}
-      languageName={profile.language_name}
+      languageName={getLanguageDisplayName(profile.language_code, locale)}
       cards={cards}
       priorAttempts={priorAttempts}
       startedAtMs={new Date(session.started_at).getTime()}

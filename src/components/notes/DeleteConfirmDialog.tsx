@@ -1,12 +1,13 @@
 "use client";
 
 import { Dialog } from "./Dialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function DeleteConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = "Delete",
+  confirmLabel,
   onClose,
   onConfirm,
 }: {
@@ -17,6 +18,7 @@ export function DeleteConfirmDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={open} onClose={onClose} title={title} description={message}>
       <div className="flex justify-end gap-2">
@@ -25,7 +27,7 @@ export function DeleteConfirmDialog({
           onClick={onClose}
           className="rounded-full px-4 py-1.5 text-sm text-muted transition-colors hover:text-foreground"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="button"
@@ -35,7 +37,7 @@ export function DeleteConfirmDialog({
           }}
           className="rounded-full border border-danger/40 px-4 py-1.5 text-sm text-danger transition-colors hover:border-danger hover:bg-danger/10"
         >
-          {confirmLabel}
+          {confirmLabel ?? t("common.delete")}
         </button>
       </div>
     </Dialog>

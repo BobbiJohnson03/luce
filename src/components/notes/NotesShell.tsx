@@ -7,6 +7,7 @@ import { NotesStoreProvider } from "./NotesStore";
 import { NotesActionsProvider } from "./NotesActions";
 import { NotesSidebar } from "./NotesSidebar";
 import { CloseIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * Client root of the Notes workspace. Wires the toast, data store and action
@@ -22,6 +23,7 @@ export function NotesShell({
   notes: NoteSummary[];
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -45,7 +47,7 @@ export function NotesShell({
                   <div className="mb-2 flex justify-end">
                     <button
                       onClick={() => setDrawerOpen(false)}
-                      aria-label="Close notes menu"
+                      aria-label={t("notes.closeMenu")}
                       className="rounded-md p-1 text-muted transition-colors hover:text-foreground"
                     >
                       <CloseIcon />
@@ -61,14 +63,14 @@ export function NotesShell({
               <div className="flex items-center gap-3 px-4 py-3 md:hidden">
                 <button
                   onClick={() => setDrawerOpen(true)}
-                  aria-label="Open notes menu"
+                  aria-label={t("notes.openMenu")}
                   className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-strong transition-colors hover:text-foreground"
                 >
                   <span className="flex flex-col gap-1">
                     <span className="block h-px w-4 bg-current" />
                     <span className="block h-px w-4 bg-current" />
                   </span>
-                  Notes
+                  {t("notes.title")}
                 </button>
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>

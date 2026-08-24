@@ -15,7 +15,8 @@ import {
   summarizeAttempts,
   type ReviewAttempt,
 } from "@/lib/languages/srs/summary";
-import { RATING_LABELS, type ReviewRating } from "@/lib/languages/srs/types";
+import type { ReviewRating } from "@/lib/languages/srs/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * A card as shown by the focused session runner, with front/back already
@@ -80,6 +81,13 @@ export function SessionRunner({
   ) => ReactNode;
 }) {
   const toast = useToast();
+  const { t } = useI18n();
+  const ratingLabels: Record<ReviewRating, string> = {
+    1: t("session.again"),
+    2: t("session.hard"),
+    3: t("session.good"),
+    4: t("session.easy"),
+  };
   const [cardsById] = useState(
     () => new Map(cards.map((card) => [card.itemId, card])),
   );
@@ -122,25 +130,25 @@ export function SessionRunner({
         if (isComplete(next)) setEndedAt(Date.now());
       } else if (result.code === "stale") {
         // Persisted elsewhere first. Keep the card; the next attempt re-reads.
-        toast.error("This card changed elsewhere. Please grade it again.");
-        setError("This card changed elsewhere. Please grade it again.");
+        toast.error(t("session.stale"));
+        setError(t("session.stale"));
       } else if (result.code === "unavailable") {
         // The card vanished (e.g. archived elsewhere). Skip without recording.
         const next = answerCurrent(queue, 3);
-        toast.error(result.message ?? "This card is no longer available.");
+        toast.error(result.message ?? t("session.unavailable"));
         setQueue(next);
         setShowBack(false);
         setShownAt(Date.now());
         if (isComplete(next)) setEndedAt(Date.now());
       } else {
         // Persistence failed: never advance. Keep the card and allow a retry.
-        const message = result.message ?? "This answer could not be saved.";
+        const message = result.message ?? t("session.saveError");
         toast.error(message);
         setError(message);
       }
       setPending(false);
     },
-    [queue, showBack, pending, shownAt, onGrade, toast],
+    [queue, showBack, pending, shownAt, onGrade, t, toast],
   );
 
   // Keyboard: Space reveals, 1–4 grade (only once revealed).
@@ -219,9 +227,11 @@ export function SessionRunner({
                 onClick={reveal}
                 className="rounded-full border border-border-strong px-6 py-2.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
               >
-                Show answer
+                {t("session.showAnswer")}
               </button>
-              <p className="mt-4 text-xs tracking-[0.2em] text-muted">SPACE</p>
+              <p className="mt-4 text-xs tracking-[0.2em] text-muted">
+                {t("session.space")}
+              </p>
             </div>
           ) : (
             <div className="mt-10 space-y-6">
@@ -267,7 +277,7 @@ export function SessionRunner({
                 onClick={() => void grade(rating)}
                 className="flex flex-col items-center gap-1.5 rounded-xl border border-border px-3 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
               >
-                <span>{RATING_LABELS[rating]}</span>
+                <span>{ratingLabels[rating]}</span>
                 <span className="text-xs tabular-nums text-muted">{key}</span>
               </button>
             ))}

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ThemeScript } from "@/components/theme/ThemeScript";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
+import { getI18n } from "@/lib/i18n/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,22 +16,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Luce — command center",
-  description:
-    "Luce — your personal command center. Calendar, notes and to-dos in a calm, minimalist dark space.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return {
+    title: t("metadata.title"),
+    description: t("metadata.description"),
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale } = await getI18n();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeScript />
-        <ThemeProvider>{children}</ThemeProvider>
+        <I18nProvider locale={locale}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );

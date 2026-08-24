@@ -13,6 +13,7 @@ import type {
   LanguageTopic,
   VocabularyItemWithTopics,
 } from "@/lib/languages/types";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const fieldClass =
   "w-full rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted/60 focus:border-accent disabled:cursor-not-allowed disabled:opacity-60";
@@ -83,6 +84,7 @@ export function VocabularyDialog({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useI18n();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const labels = topicPathLabels(topics);
@@ -107,7 +109,9 @@ export function VocabularyDialog({
         return;
       }
 
-      toast.success(item ? "Vocabulary updated." : "Vocabulary added.");
+      toast.success(
+        item ? t("vocabulary.updatedToast") : t("vocabulary.addedToast"),
+      );
       setError("");
       onClose();
       router.refresh();
@@ -118,14 +122,16 @@ export function VocabularyDialog({
     <Dialog
       open={open}
       onClose={close}
-      title={item ? "Edit vocabulary" : "Add vocabulary"}
-      description="Keep the essentials simple. Add context only when it helps."
+      title={item ? t("vocabulary.edit") : t("vocabulary.add")}
+      description={t("vocabulary.dialogDescription")}
       panelClassName="max-h-[calc(100vh-2rem)] max-w-2xl overflow-y-auto"
     >
       <form onSubmit={submit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-2">
-            <span className="text-xs tracking-[0.16em] text-muted">TERM</span>
+            <span className="text-xs tracking-[0.16em] text-muted">
+              {t("vocabulary.term")}
+            </span>
             <input
               name="term"
               required
@@ -137,7 +143,7 @@ export function VocabularyDialog({
           </label>
           <label className="flex flex-col gap-2">
             <span className="text-xs tracking-[0.16em] text-muted">
-              TRANSLATION
+              {t("vocabulary.translation")}
             </span>
             <input
               name="translation"
@@ -155,61 +161,61 @@ export function VocabularyDialog({
             <span className="mr-2 inline-block transition-transform group-open:rotate-90">
               ›
             </span>
-            More details
+            {t("vocabulary.moreDetails")}
           </summary>
           <div className="mt-5 flex flex-col gap-4 border-t border-border pt-5">
             <TextAreaField
-              label="DEFINITION"
+              label={t("vocabulary.definition")}
               name="definition"
               defaultValue={item?.definition}
               maxLength={4000}
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field
-                label="PART OF SPEECH"
+                label={t("vocabulary.partOfSpeech")}
                 name="part_of_speech"
                 defaultValue={item?.part_of_speech}
                 maxLength={120}
               />
               <Field
-                label="GENDER"
+                label={t("vocabulary.gender")}
                 name="gender"
                 defaultValue={item?.gender}
                 maxLength={120}
               />
               <Field
-                label="PLURAL"
+                label={t("vocabulary.plural")}
                 name="plural"
                 defaultValue={item?.plural}
                 maxLength={300}
               />
               <Field
-                label="PRONUNCIATION"
+                label={t("vocabulary.pronunciation")}
                 name="pronunciation"
                 defaultValue={item?.pronunciation}
                 maxLength={500}
               />
             </div>
             <Field
-              label="IPA"
+              label={t("vocabulary.ipa")}
               name="ipa"
               defaultValue={item?.ipa}
               maxLength={500}
             />
             <TextAreaField
-              label="EXAMPLE SENTENCE"
+              label={t("vocabulary.exampleSentence")}
               name="example_sentence"
               defaultValue={item?.example_sentence}
               maxLength={4000}
             />
             <TextAreaField
-              label="EXAMPLE TRANSLATION"
+              label={t("vocabulary.exampleTranslation")}
               name="example_translation"
               defaultValue={item?.example_translation}
               maxLength={4000}
             />
             <TextAreaField
-              label="NOTES"
+              label={t("vocabulary.notes")}
               name="notes"
               defaultValue={item?.notes}
               maxLength={10000}
@@ -221,7 +227,7 @@ export function VocabularyDialog({
         {topics.length > 0 && (
           <fieldset className="rounded-xl border border-border px-4 py-3">
             <legend className="px-1 text-xs tracking-[0.16em] text-muted">
-              TOPICS
+              {t("vocabulary.topics")}
             </legend>
             <div className="mt-1 grid max-h-44 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
               {topics.map((topic) => (
@@ -256,14 +262,18 @@ export function VocabularyDialog({
             disabled={pending}
             className="rounded-full px-4 py-2 text-sm text-muted transition-colors hover:text-foreground disabled:opacity-50"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="submit"
             disabled={pending}
             className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {pending ? "Saving…" : item ? "Save changes" : "Add vocabulary"}
+            {pending
+              ? t("common.saving")
+              : item
+                ? t("languages.saveChanges")
+                : t("vocabulary.add")}
           </button>
         </div>
       </form>

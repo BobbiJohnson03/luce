@@ -9,6 +9,7 @@ import type {
 } from "@/lib/languages/types";
 import { VocabularyDetailDialog } from "./VocabularyDetailDialog";
 import { VocabularyDialog } from "./VocabularyDialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function VocabularyPageClient({
   profileId,
@@ -32,6 +33,7 @@ export function VocabularyPageClient({
   dueCount: number;
 }) {
   const [adding, setAdding] = useState(false);
+  const { t } = useI18n();
   const [selected, setSelected] = useState<VocabularyItemWithTopics | null>(null);
   const [editing, setEditing] = useState<VocabularyItemWithTopics | null>(null);
   const topicLabels = topicPathLabels(topics);
@@ -51,11 +53,23 @@ export function VocabularyPageClient({
     <div className="py-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs tracking-[0.25em] text-muted">VOCABULARY</p>
+          <p className="text-xs tracking-[0.25em] text-muted">
+            {t("vocabulary.label")}
+          </p>
           <h2 className="mt-3 text-3xl font-light tracking-tight">
             {hasFilters
-              ? `${total} ${total === 1 ? "result" : "results"}`
-              : `${total} ${total === 1 ? "word" : "words"}`}
+              ? t(
+                  total === 1
+                    ? "vocabulary.resultOne"
+                    : "vocabulary.resultOther",
+                  { count: total },
+                )
+              : t(
+                  total === 1
+                    ? "vocabulary.wordOne"
+                    : "vocabulary.wordOther",
+                  { count: total },
+                )}
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -64,21 +78,21 @@ export function VocabularyPageClient({
               href={`/languages/${profileId}/review?from=vocabulary`}
               className="w-fit rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
             >
-              Review due ({dueCount})
+              {t("vocabulary.reviewDue", { count: dueCount })}
             </Link>
           )}
           <Link
             href={`/languages/${profileId}/practice`}
             className="w-fit rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
           >
-            Practice vocabulary →
+            {t("vocabulary.practice")}
           </Link>
           <button
             type="button"
             onClick={() => setAdding(true)}
             className="w-fit rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90"
           >
-            + Add vocabulary
+            + {t("vocabulary.add")}
           </button>
         </div>
       </div>
@@ -88,23 +102,23 @@ export function VocabularyPageClient({
         className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.35fr)_auto]"
       >
         <label>
-          <span className="sr-only">Search vocabulary</span>
+          <span className="sr-only">{t("vocabulary.searchAria")}</span>
           <input
             type="search"
             name="q"
             defaultValue={query}
-            placeholder="Search vocabulary…"
+            placeholder={t("vocabulary.searchPlaceholder")}
             className="w-full rounded-xl border border-border bg-surface/50 px-4 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted focus:border-accent"
           />
         </label>
         <label>
-          <span className="sr-only">Filter by topic</span>
+          <span className="sr-only">{t("vocabulary.filterTopic")}</span>
           <select
             name="topic"
             defaultValue={selectedTopicId}
             className="w-full rounded-xl border border-border bg-surface/50 px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-accent"
           >
-            <option value="">All Topics</option>
+            <option value="">{t("vocabulary.allTopics")}</option>
             {topics.map((topic) => (
               <option key={topic.id} value={topic.id}>
                 {topicLabels.get(topic.id) ?? topic.name}
@@ -116,7 +130,7 @@ export function VocabularyPageClient({
           type="submit"
           className="rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          Search
+          {t("common.search")}
         </button>
       </form>
 
@@ -125,19 +139,19 @@ export function VocabularyPageClient({
           href={`/languages/${profileId}/vocabulary`}
           className="mt-3 inline-block text-xs text-muted transition-colors hover:text-foreground"
         >
-          Clear search and filters
+          {t("vocabulary.clearFilters")}
         </Link>
       )}
 
       {items.length === 0 ? (
         <section className="mt-8 rounded-2xl border border-border bg-surface/30 px-6 py-14 text-center">
           <h3 className="text-xl font-light">
-            {hasFilters ? "No vocabulary matches." : "No vocabulary yet."}
+            {hasFilters ? t("vocabulary.noMatch") : t("vocabulary.empty")}
           </h3>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
             {hasFilters
-              ? "Try another term, translation, or topic."
-              : "Add the first word or expression you want to keep."}
+              ? t("vocabulary.noMatchHint")
+              : t("vocabulary.emptyHint")}
           </p>
           {!hasFilters && (
             <button
@@ -145,7 +159,7 @@ export function VocabularyPageClient({
               onClick={() => setAdding(true)}
               className="mt-6 rounded-full border border-border-strong px-5 py-2 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
             >
-              Add vocabulary
+              {t("vocabulary.add")}
             </button>
           )}
         </section>
@@ -199,7 +213,7 @@ export function VocabularyPageClient({
 
       {pageCount > 1 && (
         <nav
-          aria-label="Vocabulary pages"
+          aria-label={t("vocabulary.pages")}
           className="mt-6 flex items-center justify-between text-sm"
         >
           {page > 1 ? (
@@ -207,20 +221,20 @@ export function VocabularyPageClient({
               href={pageHref(page - 1)}
               className="text-muted transition-colors hover:text-foreground"
             >
-              ← Previous
+              ← {t("common.previous")}
             </Link>
           ) : (
             <span />
           )}
           <span className="text-xs text-muted">
-            Page {page} of {pageCount}
+            {t("common.pageOf", { page, total: pageCount })}
           </span>
           {page < pageCount ? (
             <Link
               href={pageHref(page + 1)}
               className="text-muted transition-colors hover:text-foreground"
             >
-              Next →
+              {t("common.next")} →
             </Link>
           ) : (
             <span />
