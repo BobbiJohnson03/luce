@@ -200,13 +200,92 @@ body {
 .luce-blocknote .bn-editor {
   padding-inline: 0;
   background: transparent;
+  min-width: 0;
+  caret-color: var(--foreground);
 }
 
 .luce-blocknote .bn-block-content[data-content-type="codeBlock"] {
   background: var(--surface);
+  color: var(--foreground);
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   font-family: var(--font-mono), ui-monospace, monospace;
+  min-width: 0;
+  max-width: 100%;
+  caret-color: var(--foreground);
+  overflow: hidden;
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"]:focus-within {
+  border-color: var(--border-strong);
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"] > pre {
+  box-sizing: border-box;
+  max-width: 100%;
+  color: inherit;
+  background: transparent;
+  caret-color: var(--foreground);
+  overscroll-behavior-x: contain;
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"] > pre > code {
+  color: inherit;
+  background: transparent;
+  caret-color: inherit;
+}
+
+.luce-blocknote
+  .bn-block-content[data-content-type="codeBlock"]
+  > div
+  > select {
+  color: var(--muted-strong);
+}
+
+.luce-blocknote
+  .bn-block-content[data-content-type="codeBlock"]
+  > div
+  > select
+  > option {
+  color: var(--foreground);
+  background: var(--surface-2);
+}
+
+/* Inline code remains distinct without inheriting BlockNote's dark palette. */
+.luce-blocknote .bn-inline-content code {
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  padding: 0.08em 0.3em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Uploaded and URL-based images must stay inside the Note column on mobile. */
+.luce-blocknote [data-file-block] .bn-file-block-content-wrapper,
+.luce-blocknote [data-file-block] .bn-visual-media-wrapper,
+.luce-blocknote [data-file-block] .bn-visual-media {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.luce-blocknote [data-file-block] .bn-visual-media {
+  height: auto;
+  object-fit: contain;
+}
+
+.luce-blocknote .bn-error-text {
+  color: var(--danger);
+}
+
+.luce-blocknote .bn-file-loading-preview {
+  color: var(--muted-strong);
+  font-size: 0;
+}
+
+.luce-blocknote .bn-file-loading-preview::after {
+  content: var(--luce-image-uploading-label);
+  font-size: 0.875rem;
 }
 
 /* Tables: quiet borders that match Luce, horizontal scroll on small screens. */

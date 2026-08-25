@@ -272,6 +272,7 @@ export function NoteEditorScreen({
       <div className="mt-4">
         <NoteEditor
           key={note.id}
+          noteId={note.id}
           initialContent={note.content ?? []}
           onChange={onContentChange}
         />

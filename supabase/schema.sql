@@ -1181,3 +1181,73 @@ create policy "users can remove own language note topics"
   on public.language_note_topics
   for delete
   using (auth.uid() = user_id);
+
+-- ── Private Note image assets (see 0006_note_assets_storage.sql) ────────────
+-- BlockNote stores only a private Storage object path in Note JSON. Actual
+-- image bytes live in a private, type- and size-restricted Storage bucket.
+insert into storage.buckets (
+  id,
+  name,
+  public,
+  file_size_limit,
+  allowed_mime_types
+)
+values (
+  'note-assets',
+  'note-assets',
+  false,
+  10485760,
+  array[
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif'
+  ]::text[]
+)
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "users can upload images to own notes"
+  on storage.objects;
+create policy "users can upload images to own notes"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'note-assets'
+    and owner_id = (select auth.uid()::text)
+    and array_length(storage.foldername(name), 1) = 2
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
+    and storage.filename(name) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}[.](jpg|jpeg|png|webp|gif)$'
+    and exists (
+      select 1
+      from public.notes note
+      where note.id::text = (storage.foldername(name))[2]
+        and note.user_id = auth.uid()
+    )
+  );
+
+drop policy if exists "users can read images from own notes"
+  on storage.objects;
+create policy "users can read images from own notes"
+  on storage.objects
+  for select
+  to authenticated
+  using (
+    bucket_id = 'note-assets'
+    and owner_id = (select auth.uid()::text)
+    and array_length(storage.foldername(name), 1) = 2
+    and (storage.foldername(name))[1] = (select auth.uid()::text)
+    and exists (
+      select 1
+      from public.notes note
+      where note.id::text = (storage.foldername(name))[2]
+        and note.user_id = auth.uid()
+    )
+  );
+
+-- Intentionally no UPDATE or DELETE policy: uploads never overwrite, and
+-- automatic orphan cleanup is outside this checkpoint.
