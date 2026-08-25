@@ -15,11 +15,19 @@ export default async function DashboardLayout({
   const { t } = await getI18n();
   if (!isSupabaseConfigured()) return <SetupNotice />;
   const menuItems = [
-    { label: t("menu.overview"), href: "/dashboard" },
-    { label: t("menu.calendar"), href: "#calendar" },
-    { label: t("menu.todos"), href: "#todos" },
-    { label: t("menu.notes"), href: "/notes" },
-    { label: t("menu.languages"), href: "/languages" },
+    {
+      id: "overview" as const,
+      label: t("menu.overview"),
+      href: "/dashboard",
+    },
+    { id: "calendar" as const, label: t("menu.calendar"), href: "#calendar" },
+    { id: "tasks" as const, label: t("menu.todos"), href: "#todos" },
+    { id: "notes" as const, label: t("menu.notes"), href: "/notes" },
+    {
+      id: "languages" as const,
+      label: t("menu.languages"),
+      href: "/languages",
+    },
   ];
 
   const supabase = await createClient();

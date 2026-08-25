@@ -6,7 +6,11 @@ import { setLocalePreference } from "@/app/locale-actions";
 import type { Locale } from "@/lib/i18n/locale";
 import { useI18n } from "./I18nProvider";
 
-export function LocaleSelector() {
+export function LocaleSelector({
+  variant = "compact",
+}: {
+  variant?: "compact" | "menu";
+}) {
   const { locale, t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -34,13 +38,20 @@ export function LocaleSelector() {
           disabled={pending}
           onClick={() => select(value)}
           className={[
-            "rounded-full px-3 py-1 text-xs transition-colors disabled:opacity-50",
+            "rounded-full transition-colors disabled:opacity-50",
+            variant === "menu" ? "px-4 py-1.5 text-sm" : "px-3 py-1 text-xs",
             locale === value
               ? "bg-surface-2 text-foreground"
               : "text-muted hover:text-foreground",
           ].join(" ")}
         >
-          {value === "en" ? "EN" : "PL"}
+          {variant === "menu"
+            ? value === "en"
+              ? t("locale.english")
+              : t("locale.polish")
+            : value === "en"
+              ? "EN"
+              : "PL"}
         </button>
       ))}
     </div>
