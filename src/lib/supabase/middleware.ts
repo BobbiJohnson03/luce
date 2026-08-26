@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Refreshes the Supabase session on every request and guards private routes.
- * Unauthenticated users hitting /dashboard are redirected to /login.
+ * Unauthenticated users hitting a private Luce domain are redirected to /login.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -37,7 +37,9 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isProtected =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/notes");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/notes") ||
+    pathname.startsWith("/languages");
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   if (!user && isProtected) {

@@ -10,11 +10,13 @@ export function AuthCard({
   subtitle,
   children,
   footer,
+  backLabel,
 }: {
   title: string;
   subtitle: string;
   children: React.ReactNode;
   footer: React.ReactNode;
+  backLabel: string;
 }) {
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -42,7 +44,7 @@ export function AuthCard({
 
       <footer className="relative z-10 px-6 py-6 text-xs tracking-wide text-muted sm:px-10">
         <Link href="/" className="transition-colors hover:text-foreground">
-          ← Wróć na stronę główną
+          {backLabel}
         </Link>
       </footer>
     </div>

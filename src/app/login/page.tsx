@@ -2,25 +2,28 @@ import Link from "next/link";
 import { login } from "@/app/auth/actions";
 import { AuthCard } from "@/components/AuthCard";
 import { AuthForm } from "@/components/AuthForm";
+import { getI18n } from "@/lib/i18n/server";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const { t } = await getI18n();
   return (
     <AuthCard
-      title="Bentornata"
-      subtitle="Zaloguj się do swojego centrum dowodzenia."
+      title={t("auth.loginTitle")}
+      subtitle={t("auth.loginSubtitle")}
+      backLabel={t("auth.backHome")}
       footer={
         <>
-          Nie masz jeszcze konta?{" "}
+          {t("auth.noAccount")} {" "}
           <Link
             href="/register"
             className="text-foreground underline-offset-4 hover:underline"
           >
-            Załóż je
+            {t("auth.createAccountLink")}
           </Link>
         </>
       }
     >
-      <AuthForm action={login} submitLabel="Zaloguj się" />
+      <AuthForm action={login} submitLabel={t("auth.loginSubmit")} />
     </AuthCard>
   );
 }

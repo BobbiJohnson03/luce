@@ -74,7 +74,7 @@ export function DropdownMenu({
               className={[
                 "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors",
                 item.danger
-                  ? "text-red-400 hover:bg-red-500/10"
+                  ? "text-danger hover:bg-danger/10"
                   : "text-muted-strong hover:bg-surface hover:text-foreground",
               ].join(" ")}
             >

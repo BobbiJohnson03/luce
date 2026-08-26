@@ -18,10 +18,10 @@ export function BlobPlaceholder({ className = "" }: { className?: string }) {
     >
       {/* Outer glow */}
       <div className="absolute inset-0 rounded-full bg-accent/10 blur-3xl" />
-      {/* Core orb */}
-      <div className="absolute inset-[12%] animate-[luce-fade-up_1s_ease-out] rounded-full bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.9),rgba(245,240,230,0.35)_45%,rgba(120,120,130,0.08)_70%,transparent_75%)]" />
+      {/* Core orb (theme-aware gradient defined in globals.css) */}
+      <div className="luce-orb absolute inset-[12%] animate-[luce-fade-up_1s_ease-out] rounded-full" />
       {/* Inner highlight */}
-      <div className="absolute inset-[26%] rounded-full bg-[radial-gradient(circle_at_40%_35%,rgba(255,255,255,0.55),transparent_60%)] blur-md" />
+      <div className="luce-orb-highlight absolute inset-[26%] rounded-full blur-md" />
     </div>
   );
 }

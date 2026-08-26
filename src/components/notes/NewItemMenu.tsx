@@ -3,22 +3,24 @@
 import { useNotesActions } from "./NotesActions";
 import { DropdownMenu } from "./DropdownMenu";
 import { DocIcon, FolderIcon, PlusIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /** The "+ New" affordance in the sidebar (root-level note / folder creation). */
 export function NewItemMenu() {
   const actions = useNotesActions();
+  const { t } = useI18n();
   return (
     <DropdownMenu
       align="start"
-      label="Create new"
+      label={t("notes.createNew")}
       items={[
         {
-          label: "New note",
+          label: t("notes.newNote"),
           icon: <DocIcon />,
           onSelect: () => actions.createNoteIn(null),
         },
         {
-          label: "New folder",
+          label: t("notes.newFolder"),
           icon: <FolderIcon />,
           onSelect: () => actions.createFolderIn(null),
         },
@@ -32,7 +34,7 @@ export function NewItemMenu() {
           className="flex items-center gap-2 rounded-full border border-border-strong px-3.5 py-1.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
           <PlusIcon />
-          New
+          {t("notes.new")}
         </button>
       )}
     />

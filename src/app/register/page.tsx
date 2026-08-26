@@ -2,25 +2,28 @@ import Link from "next/link";
 import { register } from "@/app/auth/actions";
 import { AuthCard } from "@/components/AuthCard";
 import { AuthForm } from "@/components/AuthForm";
+import { getI18n } from "@/lib/i18n/server";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const { t } = await getI18n();
   return (
     <AuthCard
-      title="Crea la tua Luce"
-      subtitle="Załóż konto i zbuduj swoje centrum dowodzenia."
+      title={t("auth.registerTitle")}
+      subtitle={t("auth.registerSubtitle")}
+      backLabel={t("auth.backHome")}
       footer={
         <>
-          Masz już konto?{" "}
+          {t("auth.haveAccount")} {" "}
           <Link
             href="/login"
             className="text-foreground underline-offset-4 hover:underline"
           >
-            Zaloguj się
+            {t("auth.loginLink")}
           </Link>
         </>
       }
     >
-      <AuthForm action={register} submitLabel="Załóż konto" />
+      <AuthForm action={register} submitLabel={t("auth.registerSubmit")} />
     </AuthCard>
   );
 }

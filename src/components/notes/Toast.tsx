@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 type ToastKind = "error" | "success" | "info";
 type ToastItem = { id: number; message: string; kind: ToastKind };
@@ -26,6 +27,7 @@ const ToastContext = createContext<ToastApi | null>(null);
  * browser alert().
  */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const { t: translate } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
   const nextId = useRef(1);
 
@@ -65,7 +67,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             className={[
               "animate-fade-up pointer-events-auto flex items-start gap-3 rounded-xl border bg-surface-2 px-4 py-3 text-sm shadow-lg shadow-black/30",
               t.kind === "error"
-                ? "border-red-500/30 text-red-300"
+                ? "border-danger/30 text-danger"
                 : t.kind === "success"
                   ? "border-border text-foreground"
                   : "border-border text-muted-strong",
@@ -74,7 +76,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <span className="flex-1 leading-snug">{t.message}</span>
             <button
               onClick={() => remove(t.id)}
-              aria-label="Dismiss"
+              aria-label={translate("notes.dismissToast")}
               className="text-muted transition-colors hover:text-foreground"
             >
               ✕

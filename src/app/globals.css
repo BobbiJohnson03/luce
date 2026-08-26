@@ -1,29 +1,69 @@
 @import "tailwindcss";
 
 /*
- * Luce - design system (dark mode only)
- * Minimalist, high-contrast, lots of whitespace. Inspired by junhyungpark.com
- * but inverted into a calm, dark "command center" aesthetic.
+ * Luce — design system.
+ *
+ * Two intentional palettes that share the same architecture, typography,
+ * spacing and interaction behaviour: a calm minimalist DARK mode (the original,
+ * unchanged) and an editorial, modernist LIGHT mode. Dark is the safe default,
+ * so existing users keep the approved appearance until they opt into another.
+ *
+ * The active palette is selected by the `data-theme` attribute on <html>
+ * ("dark" | "light"), set before paint by the inline script in the root layout
+ * and managed at runtime by the ThemeProvider.
  */
 
 :root {
-  /* Core surfaces */
+  /* ── Dark (default) ─────────────────────────────────────────────────────── */
   --background: #0a0a0a;
   --surface: #111111;
   --surface-2: #161616;
   --foreground: #ededed;
 
-  /* Text hierarchy */
   --muted: #8a8a8a;
   --muted-strong: #b4b4b4;
 
-  /* Lines / borders */
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
 
-  /* Accent - "luce" (light): a soft warm glow */
+  /* Accent - "luce" (light): a soft warm glow, prominent on the dark canvas. */
   --accent: #f5f0e6;
   --accent-dim: rgba(245, 240, 230, 0.6);
+
+  /* Danger - reserved strictly for destructive actions / errors. */
+  --danger: #f87171;
+
+  --selection-bg: rgba(245, 240, 230, 0.6);
+  --selection-fg: #0a0a0a;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  /* ── Light - warm, editorial, modernist. Not a plain invert. ───────────────
+   * Canvas is a soft warm off-white; surfaces lift gently toward white; the
+   * accent becomes a near-black so the same `bg-accent text-background` pattern
+   * yields a confident dark control with light text. */
+  --background: #f4f3ee;
+  --surface: #faf9f6;
+  --surface-2: #ffffff;
+  --foreground: #1b1b19;
+
+  --muted: #6c6a63;
+  --muted-strong: #3d3b36;
+
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.18);
+
+  --accent: #1b1b19;
+  --accent-dim: rgba(27, 27, 25, 0.16);
+
+  --danger: #b42318;
+
+  --selection-bg: rgba(27, 27, 25, 0.14);
+  --selection-fg: #1b1b19;
+
+  color-scheme: light;
 }
 
 @theme inline {
@@ -36,13 +76,10 @@
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
+  --color-danger: var(--danger);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-html {
-  color-scheme: dark;
 }
 
 body {
@@ -53,6 +90,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* A very subtle cross-fade when the palette changes; never for motion-averse. */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+}
+
 /* Thin, unobtrusive scrollbar to match the minimalist theme */
 * {
   scrollbar-width: thin;
@@ -60,8 +106,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent-dim);
-  color: #0a0a0a;
+  background: var(--selection-bg);
+  color: var(--selection-fg);
 }
 
 /* Subtle entrance used across the app */
@@ -81,10 +127,51 @@ body {
 }
 
 /*
+ * Hero orb (landing placeholder). Theme-aware so it reads as a soft pearl on
+ * both the dark canvas and the warm light canvas rather than vanishing.
+ */
+.luce-orb {
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.9),
+    rgba(245, 240, 230, 0.35) 45%,
+    rgba(120, 120, 130, 0.08) 70%,
+    transparent 75%
+  );
+}
+
+.luce-orb-highlight {
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.55),
+    transparent 60%
+  );
+}
+
+:root[data-theme="light"] .luce-orb {
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.95),
+    rgba(208, 202, 190, 0.5) 45%,
+    rgba(120, 114, 104, 0.14) 70%,
+    transparent 76%
+  );
+}
+
+:root[data-theme="light"] .luce-orb-highlight {
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.7),
+    transparent 60%
+  );
+}
+
+/*
  * BlockNote (Notes editor) theming.
  * Map BlockNote's design tokens onto Luce's own so the editor and its menus
- * (slash menu, formatting toolbar, drag handles) blend into the dark surface
- * instead of looking like an embedded third-party widget.
+ * (slash menu, formatting toolbar, drag handles) blend into the current theme
+ * instead of looking like an embedded third-party widget. Because these map to
+ * Luce's semantic variables, they follow both the dark and light palettes.
  */
 :root,
 .bn-container,
@@ -113,13 +200,92 @@ body {
 .luce-blocknote .bn-editor {
   padding-inline: 0;
   background: transparent;
+  min-width: 0;
+  caret-color: var(--foreground);
 }
 
 .luce-blocknote .bn-block-content[data-content-type="codeBlock"] {
   background: var(--surface);
+  color: var(--foreground);
   border: 1px solid var(--border);
   border-radius: 0.6rem;
   font-family: var(--font-mono), ui-monospace, monospace;
+  min-width: 0;
+  max-width: 100%;
+  caret-color: var(--foreground);
+  overflow: hidden;
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"]:focus-within {
+  border-color: var(--border-strong);
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"] > pre {
+  box-sizing: border-box;
+  max-width: 100%;
+  color: inherit;
+  background: transparent;
+  caret-color: var(--foreground);
+  overscroll-behavior-x: contain;
+}
+
+.luce-blocknote .bn-block-content[data-content-type="codeBlock"] > pre > code {
+  color: inherit;
+  background: transparent;
+  caret-color: inherit;
+}
+
+.luce-blocknote
+  .bn-block-content[data-content-type="codeBlock"]
+  > div
+  > select {
+  color: var(--muted-strong);
+}
+
+.luce-blocknote
+  .bn-block-content[data-content-type="codeBlock"]
+  > div
+  > select
+  > option {
+  color: var(--foreground);
+  background: var(--surface-2);
+}
+
+/* Inline code remains distinct without inheriting BlockNote's dark palette. */
+.luce-blocknote .bn-inline-content code {
+  color: var(--foreground);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.3rem;
+  padding: 0.08em 0.3em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Uploaded and URL-based images must stay inside the Note column on mobile. */
+.luce-blocknote [data-file-block] .bn-file-block-content-wrapper,
+.luce-blocknote [data-file-block] .bn-visual-media-wrapper,
+.luce-blocknote [data-file-block] .bn-visual-media {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.luce-blocknote [data-file-block] .bn-visual-media {
+  height: auto;
+  object-fit: contain;
+}
+
+.luce-blocknote .bn-error-text {
+  color: var(--danger);
+}
+
+.luce-blocknote .bn-file-loading-preview {
+  color: var(--muted-strong);
+  font-size: 0;
+}
+
+.luce-blocknote .bn-file-loading-preview::after {
+  content: var(--luce-image-uploading-label);
+  font-size: 0.875rem;
 }
 
 /* Tables: quiet borders that match Luce, horizontal scroll on small screens. */

@@ -3,12 +3,7 @@
 import { useMemo, useState } from "react";
 import type { CalendarEvent } from "@/lib/types";
 import { addEvent, deleteEvent } from "@/app/dashboard/actions";
-
-const WEEKDAYS = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
-const MONTHS = [
-  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
-];
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 function iso(year: number, month: number, day: number) {
   const m = String(month + 1).padStart(2, "0");
@@ -17,6 +12,7 @@ function iso(year: number, month: number, day: number) {
 }
 
 export function Calendar({ events }: { events: CalendarEvent[] }) {
+  const { localeTag, t } = useI18n();
   const today = new Date();
   const [view, setView] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -48,24 +44,41 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
 
   const selectedEvents = eventsByDate.get(selected) ?? [];
   const todayIso = iso(today.getFullYear(), today.getMonth(), today.getDate());
+  const monthLabel = new Intl.DateTimeFormat(localeTag, {
+    month: "long",
+    year: "numeric",
+  }).format(view);
+  const weekdays = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(localeTag, { weekday: "short", timeZone: "UTC" })
+      .format(new Date(Date.UTC(2024, 0, 1 + index)))
+      .replace(".", ""),
+  );
+  const [selectedYear, selectedMonth, selectedDay] = selected
+    .split("-")
+    .map(Number);
+  const selectedLabel = new Intl.DateTimeFormat(localeTag, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(selectedYear, selectedMonth - 1, selectedDay));
 
   return (
     <div>
       {/* Month header */}
       <div className="mb-4 flex items-center justify-between">
         <span className="text-sm font-light">
-          {MONTHS[month]} {year}
+          {monthLabel}
         </span>
         <div className="flex items-center gap-1">
           <button
-            aria-label="Poprzedni miesiąc"
+            aria-label={t("calendar.previousMonth")}
             onClick={() => setView(new Date(year, month - 1, 1))}
             className="rounded-md px-2 py-1 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
           >
             ‹
           </button>
           <button
-            aria-label="Następny miesiąc"
+            aria-label={t("calendar.nextMonth")}
             onClick={() => setView(new Date(year, month + 1, 1))}
             className="rounded-md px-2 py-1 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
           >
@@ -76,7 +89,7 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
 
       {/* Weekday labels */}
       <div className="grid grid-cols-7 gap-1 text-center text-[0.65rem] tracking-wide text-muted">
-        {WEEKDAYS.map((d) => (
+        {weekdays.map((d) => (
           <div key={d} className="py-1">
             {d}
           </div>
@@ -119,11 +132,11 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
 
       {/* Selected day detail */}
       <div className="mt-6 border-t border-border pt-5">
-        <p className="text-xs tracking-[0.2em] text-muted">{selected}</p>
+        <p className="text-xs tracking-[0.2em] text-muted">{selectedLabel}</p>
 
         <ul className="mt-3 flex flex-col gap-2">
           {selectedEvents.length === 0 && (
-            <li className="text-sm text-muted">Brak wydarzeń tego dnia.</li>
+            <li className="text-sm text-muted">{t("calendar.noEvents")}</li>
           )}
           {selectedEvents.map((e) => (
             <li
@@ -137,7 +150,7 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
               <form action={deleteEvent.bind(null, e.id)}>
                 <button
                   type="submit"
-                  aria-label="Usuń wydarzenie"
+                  aria-label={t("calendar.deleteEvent")}
                   className="text-muted opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
                 >
                   ✕
@@ -158,19 +171,19 @@ export function Calendar({ events }: { events: CalendarEvent[] }) {
           <input
             name="title"
             required
-            placeholder="Nowe wydarzenie…"
+            placeholder={t("calendar.newEvent")}
             className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-accent"
           />
           <input
             name="note"
-            placeholder="Notatka (opcjonalnie)"
+            placeholder={t("calendar.noteOptional")}
             className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-accent"
           />
           <button
             type="submit"
             className="self-start rounded-full border border-border-strong px-4 py-1.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
           >
-            Dodaj
+            {t("calendar.add")}
           </button>
         </form>
       </div>

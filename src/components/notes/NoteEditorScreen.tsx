@@ -4,6 +4,11 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Note, NoteContent } from "@/lib/notes/types";
+import type {
+  LanguageProfile,
+  LanguageTopic,
+  NoteLanguageAssociation,
+} from "@/lib/languages/types";
 import { saveNoteContent } from "@/app/notes/actions";
 import { useNotesStore } from "./NotesStore";
 import { useNotesActions } from "./NotesActions";
@@ -11,6 +16,8 @@ import { useToast } from "./Toast";
 import { NotesBreadcrumbs } from "./NotesBreadcrumbs";
 import { DropdownMenu, type MenuItem } from "./DropdownMenu";
 import { MoreIcon, MoveIcon, StarIcon, TrashIcon } from "./icons";
+import { NoteLanguageMetadata } from "./NoteLanguageMetadata";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 function EditorSkeleton() {
   return (
@@ -30,13 +37,18 @@ const NoteEditor = dynamic(
 type Status = "saved" | "saving" | "error";
 
 function SaveStatus({ status }: { status: Status }) {
+  const { t } = useI18n();
   const label =
-    status === "saving" ? "Saving…" : status === "error" ? "Save failed" : "Saved";
+    status === "saving"
+      ? t("notes.saving")
+      : status === "error"
+        ? t("notes.saveFailed")
+        : t("notes.saved");
   return (
     <span
       className={[
         "flex items-center gap-1.5 text-xs",
-        status === "error" ? "text-red-400" : "text-muted",
+        status === "error" ? "text-danger" : "text-muted",
       ].join(" ")}
       role="status"
       aria-live="polite"
@@ -57,11 +69,22 @@ function SaveStatus({ status }: { status: Status }) {
   );
 }
 
-export function NoteEditorScreen({ note }: { note: Note }) {
+export function NoteEditorScreen({
+  note,
+  languageAssociations,
+  languageProfiles,
+  languageTopics,
+}: {
+  note: Note;
+  languageAssociations: NoteLanguageAssociation[];
+  languageProfiles: LanguageProfile[];
+  languageTopics: LanguageTopic[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const store = useNotesStore();
   const actions = useNotesActions();
+  const { t } = useI18n();
   const { error: toastError } = useToast();
 
   const [title, setTitle] = useState(note.title);
@@ -98,9 +121,9 @@ export function NoteEditorScreen({ note }: { note: Note }) {
     } else {
       dirtyRef.current = true;
       setStatus("error");
-      toastError("Autosave failed — your latest edits are not saved yet.");
+      toastError(t("notes.autosaveFailed"));
     }
-  }, [noteId, toastError]);
+  }, [noteId, t, toastError]);
 
   const schedule = useCallback(() => {
     dirtyRef.current = true;
@@ -170,23 +193,23 @@ export function NoteEditorScreen({ note }: { note: Note }) {
 
   const menuItems: MenuItem[] = [
     {
-      label: isPinned ? "Unpin" : "Pin",
+      label: t(isPinned ? "notes.unpin" : "notes.pin"),
       icon: <StarIcon filled={isPinned} />,
       onSelect: () => store.togglePin(note.id, !isPinned),
     },
     {
-      label: "Move",
+      label: t("notes.move"),
       icon: <MoveIcon />,
       onSelect: () =>
         actions.requestMove({
           kind: "note",
           id: note.id,
-          name: titleRef.current || "Untitled",
+          name: titleRef.current || t("notes.untitled"),
           folderId,
         }),
     },
     {
-      label: "Delete",
+      label: t("notes.delete"),
       icon: <TrashIcon />,
       danger: true,
       onSelect: () =>
@@ -194,7 +217,7 @@ export function NoteEditorScreen({ note }: { note: Note }) {
           {
             kind: "note",
             id: note.id,
-            name: titleRef.current || "Untitled",
+            name: titleRef.current || t("notes.untitled"),
             folderId,
           },
           () => {
@@ -213,14 +236,14 @@ export function NoteEditorScreen({ note }: { note: Note }) {
           <SaveStatus status={status} />
           <DropdownMenu
             items={menuItems}
-            label="Note actions"
+            label={t("notes.noteActions")}
             trigger={({ toggle, ref, open }) => (
               <button
                 ref={ref}
                 onClick={toggle}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                aria-label="Note actions"
+                aria-label={t("notes.noteActions")}
                 className="rounded-md p-1 text-muted transition-colors hover:text-foreground"
               >
                 <MoreIcon />
@@ -234,14 +257,22 @@ export function NoteEditorScreen({ note }: { note: Note }) {
         ref={titleInputRef}
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
-        placeholder="Untitled"
-        aria-label="Note title"
+        placeholder={t("notes.untitled")}
+        aria-label={t("notes.noteTitle")}
         className="mt-5 w-full bg-transparent text-3xl font-light tracking-tight text-foreground outline-none placeholder:text-muted/40"
+      />
+
+      <NoteLanguageMetadata
+        noteId={note.id}
+        associations={languageAssociations}
+        profiles={languageProfiles}
+        topics={languageTopics}
       />
 
       <div className="mt-4">
         <NoteEditor
           key={note.id}
+          noteId={note.id}
           initialContent={note.content ?? []}
           onChange={onContentChange}
         />

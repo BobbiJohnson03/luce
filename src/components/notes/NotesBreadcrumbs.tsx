@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { buildFolderPath } from "@/lib/notes/tree";
 import { useNotesStore } from "./NotesStore";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * Breadcrumb trail above a note: Notes / Folder / Subfolder / Note title.
@@ -18,6 +19,7 @@ export function NotesBreadcrumbs({
   noteTitle?: string;
 }) {
   const store = useNotesStore();
+  const { t } = useI18n();
   const path = useMemo(
     () => buildFolderPath(store.folders, folderId),
     [store.folders, folderId],
@@ -25,11 +27,11 @@ export function NotesBreadcrumbs({
 
   return (
     <nav
-      aria-label="Breadcrumb"
+      aria-label={t("notes.breadcrumb")}
       className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-xs text-muted [scrollbar-width:none]"
     >
       <Link href="/notes" className="shrink-0 transition-colors hover:text-foreground">
-        Notes
+        {t("notes.title")}
       </Link>
       {path.map((folder) => (
         <span key={folder.id} className="flex shrink-0 items-center gap-1.5">
@@ -45,7 +47,9 @@ export function NotesBreadcrumbs({
       {noteTitle !== undefined && (
         <span className="flex shrink-0 items-center gap-1.5">
           <span className="text-muted/50">/</span>
-          <span className="text-muted-strong">{noteTitle || "Untitled"}</span>
+          <span className="text-muted-strong">
+            {noteTitle || t("notes.untitled")}
+          </span>
         </span>
       )}
     </nav>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { NoteFolder } from "@/lib/notes/types";
 import { flattenFoldersForMove } from "@/lib/notes/tree";
 import { Dialog } from "./Dialog";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function MoveItemDialog({
   open,
@@ -23,6 +24,7 @@ export function MoveItemDialog({
   onClose: () => void;
   onSubmit: (targetId: string | null) => void;
 }) {
+  const { t } = useI18n();
   const targets = useMemo(
     () => flattenFoldersForMove(folders, excludeSubtreeOf),
     [folders, excludeSubtreeOf],
@@ -38,32 +40,38 @@ export function MoveItemDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Move "${itemName}"`}
-      description="Choose a destination folder."
+      title={t("notes.moveTitle", { name: itemName })}
+      description={t("notes.moveDescription")}
     >
       <div className="max-h-72 overflow-y-auto rounded-lg border border-border">
-        {targets.map((t) => {
-          const id = t.id ?? "__root__";
-          const isCurrent = t.id === currentParentId;
+        {targets.map((target) => {
+          const id = target.id ?? "__root__";
+          const isCurrent = target.id === currentParentId;
           return (
             <label
               key={id}
               className="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-surface-2"
-              style={{ paddingLeft: `${0.75 + t.depth * 0.9}rem` }}
+              style={{ paddingLeft: `${0.75 + target.depth * 0.9}rem` }}
             >
               <input
                 type="radio"
                 name="move-target"
-                checked={selected === t.id}
-                onChange={() => setSelected(t.id)}
+                checked={selected === target.id}
+                onChange={() => setSelected(target.id)}
                 className="accent-[var(--accent)]"
               />
               <span
-                className={selected === t.id ? "text-foreground" : "text-muted-strong"}
+                className={
+                  selected === target.id
+                    ? "text-foreground"
+                    : "text-muted-strong"
+                }
               >
-                {t.name}
+                {target.id === null ? t("notes.root") : target.name}
                 {isCurrent && (
-                  <span className="ml-2 text-xs text-muted">(current)</span>
+                  <span className="ml-2 text-xs text-muted">
+                    ({t("notes.current")})
+                  </span>
                 )}
               </span>
             </label>
@@ -76,14 +84,14 @@ export function MoveItemDialog({
           onClick={onClose}
           className="rounded-full px-4 py-1.5 text-sm text-muted transition-colors hover:text-foreground"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="button"
           onClick={submit}
           className="rounded-full border border-border-strong px-4 py-1.5 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
         >
-          Move here
+          {t("notes.moveHere")}
         </button>
       </div>
     </Dialog>

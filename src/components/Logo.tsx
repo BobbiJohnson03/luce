@@ -1,14 +1,19 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 /**
  * Minimalist circular monogram, echoing the small mark in the reference site.
  * "L" for Luce, drawn as a light stroke inside a thin circle.
  */
 export function Logo({ href = "/" }: { href?: string }) {
+  const { t } = useI18n();
+
   return (
     <Link
       href={href}
-      aria-label="Luce — home"
+      aria-label={t("common.homeAria")}
       className="group inline-flex items-center gap-3"
     >
       <span className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong transition-colors group-hover:border-accent">

@@ -19,6 +19,7 @@ import {
   StarIcon,
   TrashIcon,
 } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 const INDENT = 0.85; // rem per depth level
 
@@ -58,15 +59,16 @@ function NoteRow({
 }) {
   const store = useNotesStore();
   const actions = useNotesActions();
+  const { t } = useI18n();
 
   const items: MenuItem[] = [
     {
-      label: note.is_pinned ? "Unpin" : "Pin",
+      label: t(note.is_pinned ? "notes.unpin" : "notes.pin"),
       icon: <StarIcon filled={note.is_pinned} />,
       onSelect: () => store.togglePin(note.id, !note.is_pinned),
     },
     {
-      label: "Rename",
+      label: t("notes.rename"),
       icon: <EditIcon />,
       onSelect: () =>
         actions.requestRename({
@@ -77,7 +79,7 @@ function NoteRow({
         }),
     },
     {
-      label: "Move",
+      label: t("notes.move"),
       icon: <MoveIcon />,
       onSelect: () =>
         actions.requestMove({
@@ -88,7 +90,7 @@ function NoteRow({
         }),
     },
     {
-      label: "Delete",
+      label: t("notes.delete"),
       icon: <TrashIcon />,
       danger: true,
       onSelect: () =>
@@ -122,13 +124,18 @@ function NoteRow({
             selected ? "text-foreground" : "text-muted-strong",
           ].join(" ")}
         >
-          {note.title || "Untitled"}
+          {note.title || t("notes.untitled")}
         </span>
         {note.is_pinned && (
           <StarIcon filled size={11} className="shrink-0 text-accent/70" />
         )}
       </Link>
-      <RowMenu items={items} label={`Actions for ${note.title || "note"}`} />
+      <RowMenu
+        items={items}
+        label={t("notes.actionsFor", {
+          name: note.title || t("notes.untitled"),
+        })}
+      />
     </div>
   );
 }
@@ -144,23 +151,24 @@ function FolderRow({
 }) {
   const store = useNotesStore();
   const actions = useNotesActions();
+  const { t } = useI18n();
   const params = useParams<{ noteId?: string }>();
   const open = store.isExpanded(node.folder.id);
   const isEmpty = node.folders.length === 0 && node.notes.length === 0;
 
   const items: MenuItem[] = [
     {
-      label: "New note",
+      label: t("notes.newNote"),
       icon: <PlusIcon />,
       onSelect: () => actions.createNoteIn(node.folder.id),
     },
     {
-      label: "New folder",
+      label: t("notes.newFolder"),
       icon: <FolderIcon />,
       onSelect: () => actions.createFolderIn(node.folder.id),
     },
     {
-      label: "Rename",
+      label: t("notes.rename"),
       icon: <EditIcon />,
       onSelect: () =>
         actions.requestRename({
@@ -171,7 +179,7 @@ function FolderRow({
         }),
     },
     {
-      label: "Move",
+      label: t("notes.move"),
       icon: <MoveIcon />,
       onSelect: () =>
         actions.requestMove({
@@ -182,7 +190,7 @@ function FolderRow({
         }),
     },
     {
-      label: "Delete",
+      label: t("notes.delete"),
       icon: <TrashIcon />,
       danger: true,
       onSelect: () =>
@@ -204,7 +212,9 @@ function FolderRow({
         <button
           onClick={() => store.toggleExpanded(node.folder.id)}
           aria-expanded={open}
-          aria-label={open ? `Collapse ${node.folder.name}` : `Expand ${node.folder.name}`}
+          aria-label={t(open ? "notes.collapse" : "notes.expand", {
+            name: node.folder.name,
+          })}
           className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-sm"
         >
           <ChevronIcon
@@ -216,7 +226,10 @@ function FolderRow({
           <FolderIcon className="shrink-0 text-muted" />
           <span className="truncate text-muted-strong">{node.folder.name}</span>
         </button>
-        <RowMenu items={items} label={`Actions for ${node.folder.name}`} />
+        <RowMenu
+          items={items}
+          label={t("notes.actionsFor", { name: node.folder.name })}
+        />
       </div>
 
       {open && (
@@ -226,7 +239,7 @@ function FolderRow({
               className="py-1 text-xs text-muted/70"
               style={{ paddingLeft: `${0.1 + (depth + 1) * INDENT + 0.4}rem` }}
             >
-              Empty
+              {t("notes.emptyTreeItem")}
             </p>
           )}
           {node.folders.map((child) => (
@@ -254,6 +267,7 @@ function FolderRow({
 
 export function NotesTree({ onNavigate }: { onNavigate?: () => void }) {
   const store = useNotesStore();
+  const { t } = useI18n();
   const params = useParams<{ noteId?: string }>();
   const tree = useMemo(
     () => buildTree(store.folders, store.notes),
@@ -265,9 +279,9 @@ export function NotesTree({ onNavigate }: { onNavigate?: () => void }) {
   if (empty) {
     return (
       <div className="px-2 py-6 text-sm leading-relaxed text-muted">
-        No notes yet.
+        {t("notes.empty")}
         <br />
-        Create your first note or folder.
+        {t("notes.treeEmpty")}
       </div>
     );
   }

@@ -7,8 +7,10 @@ import { folderPathNames } from "@/lib/notes/tree";
 import type { NoteSummary } from "@/lib/notes/types";
 import { useNotesStore } from "./NotesStore";
 import { SearchIcon } from "./icons";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 export function NotesSearch({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useI18n();
   const router = useRouter();
   const store = useNotesStore();
   const [query, setQuery] = useState("");
@@ -78,17 +80,23 @@ export function NotesSearch({ onNavigate }: { onNavigate?: () => void }) {
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setActive(true)}
           onBlur={() => window.setTimeout(() => setActive(false), 120)}
-          placeholder="Search notes…"
-          aria-label="Search notes"
+          placeholder={t("notes.searchPlaceholder")}
+          aria-label={t("notes.searchAria")}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted/60"
         />
       </div>
 
       {showPanel && (
         <div className="absolute left-0 right-0 z-40 mt-1 max-h-80 overflow-y-auto rounded-xl border border-border bg-surface-2 p-1 shadow-lg shadow-black/30">
-          {loading && <p className="px-3 py-2 text-sm text-muted">Searching…</p>}
+          {loading && (
+            <p className="px-3 py-2 text-sm text-muted">
+              {t("notes.searching")}
+            </p>
+          )}
           {!loading && results.length === 0 && (
-            <p className="px-3 py-2 text-sm text-muted">No notes found.</p>
+            <p className="px-3 py-2 text-sm text-muted">
+              {t("notes.noResults")}
+            </p>
           )}
           {results.map((n) => {
             const path = folderPathNames(store.folders, n.folder_id);
@@ -103,10 +111,10 @@ export function NotesSearch({ onNavigate }: { onNavigate?: () => void }) {
                 className="flex w-full flex-col items-start rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface"
               >
                 <span className="truncate text-sm text-foreground">
-                  {n.title || "Untitled"}
+                  {n.title || t("notes.untitled")}
                 </span>
                 <span className="truncate text-xs text-muted">
-                  {["Notes", ...path].join(" / ")}
+                  {[t("notes.title"), ...path].join(" / ")}
                 </span>
               </button>
             );
