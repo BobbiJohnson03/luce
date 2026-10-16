@@ -36,10 +36,7 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center">
-          <p className="animate-fade-up text-sm tracking-[0.35em] text-muted [animation-delay:0.05s]">
-            {t("home.commandCenter")}
-          </p>
-          <h1 className="animate-fade-up mt-6 text-6xl font-light tracking-tight text-foreground sm:text-8xl [animation-delay:0.15s]">
+          <h1 className="animate-fade-up text-6xl font-light tracking-tight text-foreground sm:text-8xl [animation-delay:0.15s]">
             Luce
           </h1>
           <p className="animate-fade-up mt-8 max-w-md text-lg leading-relaxed text-muted-strong [animation-delay:0.3s]">
