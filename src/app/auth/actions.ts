@@ -43,11 +43,15 @@ export async function register(
   const { t } = await getI18n();
   if (!isSupabaseConfigured()) return { error: t("auth.notConfigured") };
   const { email, password } = readCredentials(formData);
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
   if (!email || !password) {
     return { error: t("auth.credentialsRequired") };
   }
   if (password.length < 6) {
     return { error: t("auth.passwordTooShort") };
+  }
+  if (password !== confirmPassword) {
+    return { error: t("auth.passwordsMismatch") };
   }
 
   const supabase = await createClient();

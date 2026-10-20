@@ -290,7 +290,7 @@ export function MenuOverlay({ items }: { items: MenuItem[] }) {
                   tabIndex={selected ? 0 : -1}
                   onFocus={() => setSelectedIndex(index)}
                   onClick={() => closeMenu({ restoreFocus: false })}
-                  className="absolute left-1/2 top-1/2 w-[min(88vw,30rem)] -translate-x-1/2 py-2 text-center text-3xl font-light tracking-tight text-foreground outline-none transition-[transform,opacity,color] duration-200 ease-out focus-visible:underline focus-visible:decoration-accent focus-visible:decoration-1 focus-visible:underline-offset-8 motion-reduce:transition-none sm:text-4xl"
+                  className="absolute left-1/2 top-1/2 w-[min(88vw,30rem)] py-2 text-center text-3xl font-light tracking-tight text-foreground outline-none transition-[transform,opacity,color] duration-200 ease-out focus-visible:underline focus-visible:decoration-accent focus-visible:decoration-1 focus-visible:underline-offset-8 motion-reduce:transition-none sm:text-4xl"
                   style={{
                     opacity: presentation.opacity,
                     transform: `translate(-50%, calc(-50% + ${distance * ITEM_SPACING_REM}rem)) scale(${presentation.scale})`,

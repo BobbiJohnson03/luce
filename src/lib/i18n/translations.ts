@@ -42,6 +42,7 @@ export const en = {
 
   "auth.email": "EMAIL",
   "auth.password": "PASSWORD",
+  "auth.confirmPassword": "CONFIRM PASSWORD",
   "auth.emailPlaceholder": "you@example.com",
   "auth.loginTitle": "Welcome back",
   "auth.loginSubtitle": "Log in to your account.",
@@ -58,7 +59,9 @@ export const en = {
   "auth.credentialsRequired": "Enter your email and password.",
   "auth.invalidCredentials": "Incorrect email or password.",
   "auth.passwordTooShort": "Password must contain at least 6 characters.",
-  "auth.confirmEmail": "Check your inbox — we sent a registration confirmation link.",
+  "auth.passwordsMismatch": "Passwords do not match.",
+  "auth.confirmEmailTitle": "Check your inbox",
+  "auth.confirmEmail": "We sent a confirmation link to your email. Click it to activate your account, then log in.",
   "auth.registrationFailed": "Account creation failed. Please try again.",
 
   "menu.overview": "Overview",
@@ -553,6 +556,7 @@ export const pl = {
 
   "auth.email": "E-MAIL",
   "auth.password": "HASŁO",
+  "auth.confirmPassword": "POWTÓRZ HASŁO",
   "auth.emailPlaceholder": "ty@przyklad.pl",
   "auth.loginTitle": "Witaj ponownie",
   "auth.loginSubtitle": "Zaloguj się na swoje konto.",
@@ -569,7 +573,9 @@ export const pl = {
   "auth.credentialsRequired": "Podaj e-mail i hasło.",
   "auth.invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
   "auth.passwordTooShort": "Hasło musi mieć co najmniej 6 znaków.",
-  "auth.confirmEmail": "Sprawdź skrzynkę — wysłaliśmy link potwierdzający rejestrację.",
+  "auth.passwordsMismatch": "Hasła nie są takie same.",
+  "auth.confirmEmailTitle": "Sprawdź skrzynkę",
+  "auth.confirmEmail": "Wysłaliśmy link potwierdzający na Twój e-mail. Kliknij go, aby aktywować konto, a następnie zaloguj się.",
   "auth.registrationFailed": "Nie udało się utworzyć konta. Spróbuj ponownie.",
 
   "menu.overview": "Przegląd",

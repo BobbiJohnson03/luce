@@ -17,7 +17,6 @@ create index if not exists events_user_date_idx
   on public.events (user_id, event_date);
 
 alter table public.events enable row level security;
-
 drop policy if exists "events are private" on public.events;
 create policy "events are private"
   on public.events

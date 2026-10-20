@@ -23,7 +23,11 @@ export default async function RegisterPage() {
         </>
       }
     >
-      <AuthForm action={register} submitLabel={t("auth.registerSubmit")} />
+      <AuthForm
+        action={register}
+        submitLabel={t("auth.registerSubmit")}
+        confirmPassword
+      />
     </AuthCard>
   );
 }
